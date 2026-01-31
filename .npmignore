@@ -1,0 +1,32 @@
+# Development files
+test.js
+.gitignore
+.vscode/
+.idea/
+
+# Auth & Session Data (IMPORTANT!)
+auth/
+*.session
+
+# Environment files
+.env*
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp/
+temp/
+
+# Browser data
+browser-data/
