@@ -1,42 +1,172 @@
-# 🚀 WhatsApp Multi Client
+# 🚀 WAEngine v1.7.4 - Session Authentication Fix Edition
 
-[![NPM Version](https://img.shields.io/npm/v/whatsapp-multi-client)](https://www.npmjs.com/package/whatsapp-multi-client)
-[![Downloads](https://img.shields.io/npm/dm/whatsapp-multi-client)](https://www.npmjs.com/package/whatsapp-multi-client)
-[![License](https://img.shields.io/npm/l/whatsapp-multi-client)](https://github.com/yourusername/whatsapp-multi-client/blob/main/LICENSE)
-[![Node.js](https://img.shields.io/node/v/whatsapp-multi-client)](https://nodejs.org/)
+[![NPM Version](https://img.shields.io/npm/v/waengine)](https://www.npmjs.com/package/waengine)
+[![Downloads](https://img.shields.io/npm/dm/waengine)](https://www.npmjs.com/package/waengine)
+[![License](https://img.shields.io/npm/l/waengine)](https://github.com/neotreydel-lab/waengine/blob/main/LICENSE)
+[![Node.js](https://img.shields.io/node/v/waengine)](https://nodejs.org/)
 
-**The most powerful WhatsApp Bot Library with Multi-Device Support & EasyBot API**
+**The most powerful WhatsApp Bot Library with 400+ Advanced Features**
 
-🎯 **Perfect for beginners AND professionals**  
-🔧 **Multi-Device Load Balancing**  
-⚡ **3-Line Bot Creation**  
-🚀 **120+ Features Built-in**
+🌍 **Universal Cross-Platform** - Works on ALL devices and platforms  
+🎯 **Sequential Multi-Device** - Professional QR scanning, one at a time  
+🧹 **Clean Terminal** - Anti-spam QR system, professional output  
+⚡ **3-Line Bot Creation** - From beginners to enterprise  
+🚀 **400+ Advanced Features** ⬆️ **FIXED in v1.7.4**  
+🔌 **Plugin System 2.0** - 8 built-in plugins with hot-loading  
+🎵 **Advanced Media** - Voice, Video, GIFs, Thumbnails  
+💬 **Rich Content** - Buttons, Lists, Templates, Carousels  
+👥 **Group Management** - Settings, Invites, Admin Tools  
+🔒 **Privacy & Security** - Block/Unblock, Privacy Settings  
+📊 **Analytics** - Online Status, Delivery Tracking  
+🖼️ **Profile Pictures** - Get/Send Profile Pictures
 
 ---
 
 ## ⚡ Quick Start (3 Lines!)
 
 ```javascript
-import { quickBot } from "whatsapp-multi-client";
+import { quickBot } from "waengine";
 
 quickBot()
     .when("hello").reply("Hi! 👋")
+    .when("voice test").voice("./audio.ogg") // NEW: Voice Messages!
+    .when("buttons").buttons("Choose:", [{ id: "1", text: "Option 1" }]) // NEW: Rich Content!
     .start();
 ```
 
-**That's it!** Your WhatsApp bot is running! 🎉
+**That's it!** Your advanced WhatsApp bot is running with 400+ features! 🎉
 
 ---
 
 ## 📦 Installation
 
 ```bash
-npm install whatsapp-multi-client
+npm install waengine
 ```
 
 **Requirements:**
 - Node.js 16+
 - A WhatsApp account for the bot
+
+---
+
+## 🆕 What's New in v1.7.4 - Session Authentication Fix Edition
+
+### 🚨 **Critical Authentication Fixes**
+- **FIXED:** "Successfully connected" messages before QR-code scan
+- **FIXED:** "Device erfolgreich authentifiziert" without authentication
+- **FIXED:** Premature success messages with socket-only connection
+- **FIXED:** Missing distinction between socket vs authenticated state
+
+### 📱 **Enhanced QR-Code System**
+- **FIXED:** Multiple QR-codes (Single Device Mode default)
+- **FIXED:** QR-code size issues (always small/extra-small)
+- **FIXED:** QR-code showing with existing valid session
+- **ROBUST:** Auth folder existence validation
+
+### 🔐 **New Authentication Events**
+```javascript
+// NEW: Only fires after real authentication
+client.on('truly_connected', (data) => {
+    console.log(`🎉 Authenticated as: ${data.userId}`);
+});
+```
+
+### 🎯 **Perfect Authentication Flow**
+1. **Socket connects** → "Socket verbunden - warte auf Authentifizierung..."
+2. **QR-code displayed** → User scans QR-code
+3. **Authentication happens** → `creds.update` event
+4. **Success messages** → Only after `creds.me?.id` exists
+5. **Bot ready** → `truly_connected` event fired
+
+---
+
+## 🆕 Previous Features (v1.7.3)
+
+### 🎵 **Advanced Media Features**
+- **Voice Messages** - Send voice notes with `msg.sendVoiceMessage()`
+- **Video Messages** - Send video notes with `msg.sendVideoMessage()`
+- **GIF Support** - Send animated GIFs with `msg.sendGif()`
+- **Thumbnails** - Add thumbnails to videos and images
+
+### 💬 **Advanced Message Features**
+- **Forward Messages** - Forward to mentions, sender, or specific chats
+- **Edit Messages** - Edit sent messages with `msg.edit()`
+- **Pin Messages** - Pin important messages in groups
+- **Star Messages** - Star/bookmark messages
+- **Quote Messages** - Quote and reply to messages
+
+### 🎨 **Rich Content Features**
+- **Button Messages** - Interactive buttons with callbacks
+- **List Messages** - Organized lists with sections
+- **Template Messages** - Reusable message templates
+- **Carousel Messages** - Swipeable card carousels
+
+### 👥 **Advanced Group Features**
+- **Group Settings** - Control who can send messages
+- **Group Description** - Update group descriptions
+- **Invite Links** - Generate and manage invite links
+- **Group Pictures** - Update group profile pictures
+
+### 🔒 **Privacy & Security Features**
+- **Block/Unblock Users** - Manage blocked contacts
+- **Privacy Settings** - Control last seen, profile pic visibility
+- **Read Receipts** - Mark messages as read/unread
+
+### 📊 **Analytics & Monitoring**
+- **Online Status** - Check if users are online
+- **Delivery Status** - Track message delivery
+- **Archive Chats** - Archive/unarchive conversations
+- **Mute Chats** - Mute notifications for specific chats
+
+### 📢 **Advanced Status Features**
+- **Status Updates** - Send text, image, video status
+- **Status Views** - Track who viewed your status
+- **User Status** - Get user's current status
+
+### 💼 **Business Features**
+- **Business Profile** - Set up business information
+- **Product Messages** - Send product catalogs
+- **Payment Requests** - Request payments from users
+
+### ⚙️ **System Features**
+- **Backup & Restore** - Backup chat data and settings
+- **Export Chats** - Export chat history
+- **Device Management** - Manage linked devices
+- **Sync with Phone** - Sync with main WhatsApp
+
+### 🖼️ **Profile Picture Features**
+- **Get Profile Pictures** - Retrieve user profile pictures
+- **Send Profile Pictures** - Send profile pics in chat
+- **Commands**: `!profilpic @user` and `!meinprofil`
+
+### 🌍 **Universal Cross-Platform QR System**
+- **Works everywhere** - Windows, macOS, Linux, Docker, Raspberry Pi, Android
+- **Intelligent browser detection** - Edge, Chrome, Firefox, Safari auto-detection
+- **Smart fallback system** - Playwright → HTTP Server → Terminal QR
+- **ES Module fixes** - No more `require is not defined` errors
+
+### 🎯 **Sequential Multi-Device Setup**
+- **One QR at a time** - No more confusion with multiple QR codes
+- **Progress indicators** - Clear 1/3, 2/3, 3/3 progress
+- **Smart pauses** - 3 seconds between devices for preparation
+- **Error handling** - Continue on failure, robust setup
+
+### 🧹 **Clean QR System (Anti-Spam)**
+- **No terminal spam** - Max 3 QR displays, 30s intervals
+- **Multiple modes** - Clean, Terminal Only, Browser Only, Silent
+- **Professional output** - Terminal clearing, clean display
+- **Configurable** - Customize intervals, max displays, modes
+
+```javascript
+// v1.5.0 - Works on ALL platforms!
+import { quickBot } from "waengine";
+
+quickBot()
+    .when("hello").reply("Hi! 👋")
+    .start();
+// ✅ QR-Code automatically optimized for your platform!
+```
 
 ---
 
@@ -46,7 +176,7 @@ npm install whatsapp-multi-client
 Perfect for quick bots and learning:
 
 ```javascript
-import { createBot } from "whatsapp-multi-client";
+import { createBot } from "waengine";
 
 createBot()
     .when("ping").reply("Pong! 🏓")
@@ -55,14 +185,17 @@ createBot()
     .start();
 ```
 
-### 🔵 **Advanced API** - For Professionals
+### 🔧 **Advanced API** - For Professionals
 Full control and customization:
 
 ```javascript
-import { WhatsAppClient } from "whatsapp-multi-client";
+import { WhatsAppClient } from "waengine";
 
 const client = new WhatsAppClient();
 client.setPrefix('!');
+
+// NEW: Ignore offline messages to prevent spam
+client.ignore.message.offline(true);
 
 client.on('message', async (msg) => {
     if (msg.text === 'hello') {
@@ -77,7 +210,7 @@ await client.connect();
 Run multiple WhatsApp accounts simultaneously:
 
 ```javascript
-import { MultiWhatsAppClient } from "whatsapp-multi-client";
+import { MultiWhatsAppClient } from "waengine";
 
 const multiClient = new MultiWhatsAppClient({
     maxDevices: 3,
@@ -100,27 +233,37 @@ await multiClient.sendMessage(chatId, { text: 'Hello from multi-device!' });
 Create WhatsApp bots in minutes, not hours!
 
 ```javascript
-import { quickBot } from "whatsapp-multi-client";
+import { quickBot } from "waengine";
 
 quickBot()
     .when("hello").reply("Hi! 👋")
     .start();
 ```
 
-### **Action Chaining**
-Chain multiple actions elegantly:
-
+### **🆕 Enhanced Action Chaining v1.1.0**
 ```javascript
-import { createBot } from "whatsapp-multi-client";
-
 createBot()
-    .when("important")
-        .react("⚠️")
+    .when("demo")
+        .react("🎬")
         .type(2)
-        .reply("This is important!")
-        .react("✅")
+        .reply("Starting demo...")
+        .wait(1000)
+        .sendImage("demo.jpg", "Demo image")
+        .slowTypeWithMention("Hello @user! This is for you! 🎉")
+        .aiReply("Explain this demo")
+        .saveData("demos", "count", 1)
         .done()
     .start();
+```
+
+### **🆕 New Mention Actions**
+```javascript
+bot
+    .when("hello").slowTypeWithMention("Hello @user! 👋")
+    .when("quick").quickTypeWithMention("Hey @user! ⚡")
+    .when("normal").normalTypeWithMention("Hi @user! 😊")
+    .when("mention").mentionSender("Thanks @user!")
+    .when("all").mentionAll("Hello everyone! 👥");
 ```
 
 ### **EasyBot Features**
@@ -154,7 +297,7 @@ const bot = createBot()
 
 ### **EasyBot Multi-Device**
 ```javascript
-import { multiBot } from "whatsapp-multi-client";
+import { multiBot } from "waengine";
 
 multiBot(3) // 3 devices
     .when("test").reply("Multi-device test!")
@@ -188,7 +331,7 @@ bot
 Run 2-3 WhatsApp accounts simultaneously for higher availability and load balancing!
 
 ```javascript
-import { MultiWhatsAppClient } from "whatsapp-multi-client";
+import { MultiWhatsAppClient } from "waengine";
 
 const multiClient = new MultiWhatsAppClient({
     maxDevices: 3,
@@ -419,6 +562,11 @@ await msg.replyWithMention("Hello @user!", userJid)
 // Mention all in group
 await msg.mentionAll("Hello everyone!")
 
+// NEW in v1.1.0: Mention with Typing
+await msg.slowTypeWithMention("Hello @user! How are you?", userJid)
+await msg.quickTypeWithMention("Hey @user! 👋", userJid)  
+await msg.normalTypeWithMention("Hi @user, nice to see you!", userJid)
+
 // Get mentions from message
 const mentions = msg.getMentions()
 
@@ -496,19 +644,51 @@ const messageTypes = await msg.stats.getMessagesByType()
 
 ### **Prefix Setup**
 ```javascript
-// Set prefix
+// Global Prefix (Fallback)
 const prefix = "!"
 client.setPrefix(prefix)
 
-// Register commands
+// Chat-spezifische Prefixes (NEU in v1.0.7!)
+client.setChatPrefix(chatId, "#")  // Für spezifischen Chat
+client.getChatPrefix(chatId)       // Prefix abrufen
+client.removeChatPrefix(chatId)    // Prefix entfernen
+
+// Commands registrieren
 client.addCommand('help', async (msg, args) => {
     await msg.reply('Help text')
 })
-
-client.addCommand('ping', async (msg, args) => {
-    await msg.reply('Pong! 🏓')
-})
 ```
+
+### **Chat-spezifische Prefixes (v1.0.7)**
+Jeder Chat/Gruppe kann einen eigenen Prefix haben:
+
+```javascript
+// Setprefix Command (Admin only)
+client.addCommand('setprefix', async (msg, args) => {
+    if (msg.isGroup && !(await msg.isAdmin())) {
+        return msg.reply('❌ Nur Admins können den Prefix ändern!');
+    }
+    
+    const newPrefix = args[0];
+    client.setChatPrefix(msg.from, newPrefix);
+    await msg.reply(`✅ Prefix geändert zu: "${newPrefix}"`);
+});
+
+// Prefix Info Command
+client.addCommand('prefixinfo', async (msg) => {
+    const chatPrefix = client.getChatPrefix(msg.from);
+    const stats = client.getPrefixStats();
+    
+    await msg.reply(`🎯 Aktueller Prefix: "${chatPrefix}"\n📊 Gesamt Chats: ${stats.totalChats}`);
+});
+```
+
+**Features:**
+- ✅ **Persistent Storage** - Prefixes werden automatisch gespeichert
+- ✅ **Admin-only** - Nur Admins können Prefixes in Gruppen ändern
+- ✅ **Validierung** - Max 5 Zeichen, keine Leerzeichen
+- ✅ **Statistics** - Übersicht über alle verwendeten Prefixes
+- ✅ **Fallback** - Global Prefix als Standard
 
 ### **Command Properties**
 ```javascript
@@ -608,7 +788,7 @@ client.emit('custom-event', data)
 
 ### **QR Code Generation**
 ```javascript
-import { generateQRCode } from "whatsapp-multi-client"
+import { generateQRCode } from "waengine"
 
 // Generate QR code
 await generateQRCode()
@@ -664,7 +844,7 @@ const type = client.getMessageType(message)
 
 ### **EasyBot (Beginners)**
 ```javascript
-import { quickBot } from "whatsapp-multi-client";
+import { quickBot } from "waengine";
 
 // 3 lines = complete bot!
 quickBot()
@@ -674,7 +854,7 @@ quickBot()
 
 ### **EasyBot with Action Chaining**
 ```javascript
-import { createBot } from "whatsapp-multi-client";
+import { createBot } from "waengine";
 
 createBot()
     .when("important")
@@ -697,7 +877,7 @@ createBot()
 
 ### **EasyBot Multi-Device**
 ```javascript
-import { multiBot } from "whatsapp-multi-client";
+import { multiBot } from "waengine";
 
 multiBot(2) // 2 devices
     .when("test").reply("Multi-device test!")
@@ -707,7 +887,7 @@ multiBot(2) // 2 devices
 
 ### **Multi-Device Bot**
 ```javascript
-import { MultiWhatsAppClient } from "whatsapp-multi-client";
+import { MultiWhatsAppClient } from "waengine";
 
 const multiClient = new MultiWhatsAppClient({
     maxDevices: 3,
@@ -753,7 +933,7 @@ console.log("🎉 Multi-device bot running!");
 
 ### **Advanced Bot**
 ```javascript
-import { WhatsAppClient } from "whatsapp-multi-client";
+import { WhatsAppClient } from "waengine";
 
 const client = new WhatsAppClient();
 const prefix = "!";
@@ -811,6 +991,300 @@ client.on('message', async (msg) => {
 - **`!demo`** - Typing demo
 - **`!customtype 3000 "Text"`** - Custom typing
 - **`!slowtype "Text"`** - Slow typing
+
+## 🚀 Advanced Features v1.7.3
+
+### **🎵 Advanced Media Features**
+
+```javascript
+// Voice Messages
+await msg.sendVoiceMessage('./audio.ogg');
+await msg.sendVoiceToMentioned('./audio.ogg'); // To all mentioned users
+
+// Video Messages  
+await msg.sendVideoMessage('./video.mp4');
+await msg.sendVideoMessageToMentioned('./video.mp4');
+
+// GIF Support
+await msg.sendGif('./animation.gif', 'Cool animation!');
+await msg.sendGifToMentioned('./animation.gif', 'For everyone!');
+
+// EasyBot Integration
+bot.when('voice test').voice('./audio.ogg').done();
+bot.when('gif test').gif('./animation.gif', 'Test GIF').done();
+```
+
+### **💬 Advanced Message Features**
+
+```javascript
+// Forward Messages
+await msg.forward('target@s.whatsapp.net'); // To specific chat
+await msg.forwardToMentioned(); // To all mentioned users
+await msg.forwardToSender(); // Back to sender
+
+// Edit Messages
+await msg.edit('New message content');
+
+// Pin/Unpin Messages (Groups only)
+await msg.pin();
+await msg.unpin();
+
+// Star/Unstar Messages
+await msg.star();
+await msg.unstar();
+
+// Quote Messages
+await msg.quote('This is a quote!');
+
+// EasyBot Integration
+bot.when('forward test').forward().done(); // Auto to mentions or sender
+bot.when('pin test').pin().done();
+bot.when('star test').star().done();
+```
+
+### **🎨 Rich Content Features**
+
+```javascript
+// Button Messages
+const buttons = [
+    { id: 'btn1', text: '✅ Yes' },
+    { id: 'btn2', text: '❌ No' },
+    { id: 'btn3', text: '🤔 Maybe' }
+];
+await msg.sendButtons('Choose an option:', buttons, 'Footer text');
+
+// List Messages
+const sections = [
+    {
+        title: 'Category 1',
+        rows: [
+            { title: 'Option 1', description: 'Description 1', id: 'opt1' },
+            { title: 'Option 2', description: 'Description 2', id: 'opt2' }
+        ]
+    }
+];
+await msg.sendList('Title', 'Description', 'Button Text', sections);
+
+// EasyBot Integration
+bot.when('button test')
+   .buttons('Choose:', [{ id: 'opt1', text: 'Option 1' }], 'Footer')
+   .done();
+
+bot.when('list test')
+   .list('Title', 'Description', 'Button', sections)
+   .done();
+```
+
+### **👥 Advanced Group Features**
+
+```javascript
+// Group Information
+const metadata = await client.get.GroupMetadata(groupId);
+
+// Group Settings
+await client.group.setSettings(groupId, {
+    messagesAdminOnly: true,
+    editGroupInfo: 'admin_only'
+});
+
+// Group Description & Subject
+await client.group.setDescription(groupId, 'New description');
+await client.group.setSubject(groupId, 'New group name');
+
+// Invite Links
+const inviteLink = await client.group.getInviteLink(groupId);
+await client.group.revokeInviteLink(groupId);
+
+// EasyBot Integration
+bot.when('group info').groupInfo().done();
+bot.when('invite').inviteLink().done();
+```
+
+### **🔒 Privacy & Security Features**
+
+```javascript
+// Block/Unblock Users
+await client.privacy.block('user@s.whatsapp.net');
+await client.privacy.unblock('user@s.whatsapp.net');
+
+// Privacy Settings
+await client.privacy.setSettings({
+    lastSeen: 'contacts', // 'everyone', 'contacts', 'nobody'
+    profilePic: 'contacts',
+    status: 'contacts'
+});
+
+// Read Receipts
+await client.privacy.markRead(chatId, messageId);
+await client.privacy.markUnread(chatId);
+
+// EasyBot Integration
+bot.when('block user').block().done(); // Blocks mentions or sender
+bot.when('unblock user').unblock().done();
+```
+
+### **📊 Analytics & Monitoring**
+
+```javascript
+// Online Status
+const isOnline = await client.analytics.isOnline('user@s.whatsapp.net');
+const lastSeen = await client.analytics.getLastSeen('user@s.whatsapp.net');
+
+// Delivery Status
+const status = await client.analytics.getDeliveryStatus(messageKey);
+
+// Archive/Unarchive Chats
+await client.analytics.archiveChat(chatId);
+await client.analytics.unarchiveChat(chatId);
+
+// Mute/Unmute Chats
+await client.analytics.muteChat(chatId, 8 * 60 * 60 * 1000); // 8 hours
+await client.analytics.unmuteChat(chatId);
+
+// EasyBot Integration
+bot.when('check online').checkOnline().done(); // Checks mentions or sender
+bot.when('archive').archive().done();
+bot.when('mute').mute(480).done(); // 480 minutes = 8 hours
+```
+
+### **📢 Advanced Status Features**
+
+```javascript
+// Send Status Updates
+await client.status.send('text', 'My status text', {
+    backgroundColor: '#000000',
+    font: 0
+});
+
+await client.status.send('image', './status-image.jpg', {
+    caption: 'Status image'
+});
+
+// Get Status Views
+const views = await client.status.getViews();
+
+// EasyBot Integration
+bot.when('status test').sendStatus('Status text').done();
+```
+
+### **🖼️ Profile Picture Features**
+
+```javascript
+// Get Profile Pictures
+const profilePicUrl = await msg.getProfilePicture('user@s.whatsapp.net');
+
+// Send Profile Pictures
+await msg.sendProfilePicture('user@s.whatsapp.net', 'Profile pic caption');
+
+// Commands
+client.addCommand('profilpic', async (msg, args) => {
+    const mentions = msg.getMentions();
+    if (mentions.length > 0) {
+        await msg.sendProfilePicture(mentions[0]);
+    }
+});
+
+client.addCommand('meinprofil', async (msg, args) => {
+    await msg.sendProfilePicture(msg.getSender(), 'Your profile picture');
+});
+```
+
+### **⚙️ System Features**
+
+```javascript
+// Backup & Restore
+const backup = await client.system.backup();
+await client.system.restoreFromBackup(backupData);
+
+// Export Chat
+const chatHistory = await client.system.exportChat(chatId, 'json');
+
+// Device Management
+const devices = await client.system.getLinkedDevices();
+await client.system.unlinkDevice('device-id');
+
+// EasyBot Integration
+bot.when('backup').backup().done();
+```
+
+### **🤖 EasyBot Advanced Integration**
+
+```javascript
+const bot = EasyBot.create();
+
+// Complex chains with all advanced features
+bot
+    .when('test all')
+    .voice('./audio.ogg')
+    .forward()
+    .pin()
+    .star()
+    .buttons('Choose:', [{ id: 'opt1', text: 'Option 1' }])
+    .groupInfo()
+    .checkOnline()
+    .archive()
+    .sendStatus('Test status')
+    .backup()
+    .reply('All features tested!')
+    .done();
+
+// Advanced EasyBot with all features enabled
+const advancedBot = EasyBot.create()
+    .enableDefaults()
+    .enableAll(); // Activates all standard features
+```
+
+### **📝 Test All Advanced Features**
+
+```bash
+# Run comprehensive test
+node advanced-features-test.js
+
+# Test specific features
+node test.js
+```
+
+### **🎯 Advanced Features Commands**
+
+- **`!voice <path>`** - Send voice message
+- **`!videomsg <path>`** - Send video message  
+- **`!gif <path> [caption]`** - Send GIF
+- **`!forward`** - Forward message
+- **`!pin`** - Pin message (admin)
+- **`!star`** - Star message
+- **`!buttons [text]`** - Button message
+- **`!list`** - List message
+- **`!groupinfo`** - Group information
+- **`!invitelink`** - Invite link (admin)
+- **`!block [@user]`** - Block user
+- **`!unblock [@user]`** - Unblock user
+- **`!online [@user]`** - Check online status
+- **`!archive`** - Archive chat
+- **`!mute [minutes]`** - Mute chat
+- **`!status <text>`** - Send status
+- **`!profilpic @user`** - Send profile picture
+- **`!meinprofil`** - Send own profile picture
+- **`!backup`** - Create backup
+
+---
+
+## 🔥 Feature Count v1.7.3
+
+**Total: 400+ Functions and Features!**
+
+- **Advanced Media Features:** 50+
+- **Advanced Message Features:** 40+  
+- **Rich Content Features:** 35+
+- **Group Management:** 30+
+- **Privacy & Security:** 25+
+- **Analytics & Monitoring:** 30+
+- **Status Features:** 20+
+- **Business Features:** 25+
+- **System Features:** 35+
+- **Profile Picture Features:** 10+
+- **EasyBot Integration:** 100+
+
+---
 
 ## 🔥 Feature Count
 

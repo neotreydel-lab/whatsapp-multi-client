@@ -43,8 +43,18 @@ export async function getSocket() {
                     await closeBrowser();
                 }
             } else if (connection === "open") {
-                console.log("✅ Erfolgreich mit WhatsApp verbunden!");
-                console.log("🎉 Du kannst jetzt den Browser schließen oder offen lassen");
+                // ROBUSTE SESSION-VALIDIERUNG: Prüfe ECHTE Authentifizierung!
+                const isAuthenticated = !!state.creds?.me?.id;
+                
+                if (!isAuthenticated) {
+                    console.log("🔌 Socket verbunden - warte auf Authentifizierung...");
+                    console.log("📱 Bereit für QR-Code Scan...");
+                    // KEINE Success-Messages bei nicht-authentifizierter Verbindung!
+                    return;
+                }
+                
+                // NUR BEI ECHTER AUTHENTIFIZIERUNG: Success Messages!
+                // ABER: Success Messages werden jetzt im creds.update Handler gemacht
                 isConnected = true;
                 
                 // Test: Alle Event-Listener anzeigen
@@ -54,7 +64,22 @@ export async function getSocket() {
             }
         });
 
-        socket.ev.on("creds.update", saveCreds);
+        socket.ev.on("creds.update", async (creds) => {
+            await saveCreds();
+            
+            // WICHTIG: Prüfe ob User jetzt authentifiziert ist (QR-Code gescannt)
+            if (creds?.me?.id && isConnected) {
+                console.log("🎉 QR-Code erfolgreich gescannt!");
+                console.log(`👤 Authentifiziert als: ${creds.me.id}`);
+                console.log("✅ Erfolgreich mit WhatsApp authentifiziert!");
+                console.log("🎉 Du kannst jetzt den Browser schließen oder offen lassen");
+                
+                // Test: Alle Event-Listener anzeigen
+                console.log("🎧 Registrierte Events:", Object.keys(socket.ev.listenerCount));
+                
+                resolve(socket);
+            }
+        });
         
         // WICHTIG: Alle Events loggen für Debug
         socket.ev.on("messages.upsert", (data) => {

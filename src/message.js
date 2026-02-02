@@ -1,4 +1,7 @@
 // Message-Klasse mit deinen eigenen Funktionen
+import { getStorage } from "./storage.js";
+import { StickerCreator } from "./sticker-creator.js";
+import { AdvancedMessage, AdvancedGroup, AdvancedPrivacy, AdvancedAnalytics, AdvancedStatus, AdvancedBusiness, AdvancedSystem } from "./advanced-features.js";
 
 export class Message {
     constructor(client, data) {
@@ -17,60 +20,185 @@ export class Message {
         this.command = null;
         this.args = [];
         this.commandText = null;
+        
+        // Storage System
+        this.storage = getStorage();
+        this.write = this.storage.write;
+        this.read = this.storage.read;
+        this.delete = this.storage.delete;
+        
+        // Waiting System - DEINE COOLE API!
+        this.waiting = {
+            after: {
+                message: (ms) => {
+                    return new Promise(resolve => {
+                        setTimeout(resolve, ms);
+                    });
+                }
+            }
+        };
+
+        // ===== ADVANCED FEATURES INTEGRATION - NEU! =====
+        this.advanced = new AdvancedMessage(this);
+        this.forward = this.advanced.forwardMessage.bind(this.advanced);
+        this.forwardToMentioned = this.advanced.forwardToMentioned.bind(this.advanced);
+        this.forwardToSender = this.advanced.forwardToSender.bind(this.advanced);
+        this.edit = this.advanced.editMessage.bind(this.advanced);
+        this.pin = this.advanced.pinMessage.bind(this.advanced);
+        this.unpin = this.advanced.unpinMessage.bind(this.advanced);
+        this.star = this.advanced.starMessage.bind(this.advanced);
+        this.unstar = this.advanced.unstarMessage.bind(this.advanced);
+        this.replyTo = this.advanced.replyToMessage.bind(this.advanced);
+        this.replyToSender = this.advanced.replyToSender.bind(this.advanced);
+        this.quote = this.advanced.quoteMessage.bind(this.advanced);
+        this.sendButtons = this.advanced.sendButtonMessage.bind(this.advanced);
+        this.sendList = this.advanced.sendListMessage.bind(this.advanced);
+        this.sendTemplate = this.advanced.sendTemplateMessage.bind(this.advanced);
+        this.sendCarousel = this.advanced.sendCarouselMessage.bind(this.advanced);
     }
 
     // ===== REPLY FUNCTIONS =====
     
-    async reply(text, mentions = []) {
-        if (mentions.length > 0) {
-            return await this.client.socket.sendMessage(this.from, {
-                text: text,
-                mentions: mentions
-            });
+    async reply(text, mentions = [], options = {}) {
+        // Hidetag Feature - DEINE COOLE API!
+        if (options.hidetag) {
+            if (!this.isGroup) {
+                throw new Error('Hidetag funktioniert nur in Gruppen');
+            }
+
+            let hiddenMentions = [];
+            
+            if (options.hidetag === 'all') {
+                // Alle Gruppenmitglieder erwähnen (unsichtbar)
+                const groupMetadata = await this.client.get.GroupMetadata(this.from);
+                hiddenMentions = groupMetadata.participants.map(p => p.id);
+            } else if (options.hidetag === 'sender') {
+                // Nur den Sender erwähnen (unsichtbar)
+                hiddenMentions = [this.getSender()];
+            } else if (typeof options.hidetag === 'string' && options.hidetag.includes('@')) {
+                // Spezifische JID erwähnen (unsichtbar)
+                hiddenMentions = [options.hidetag];
+            }
+
+            try {
+                return await this.client.socket.sendMessage(this.from, {
+                    text: text,
+                    mentions: [...mentions, ...hiddenMentions]
+                });
+            } catch (error) {
+                console.error('❌ Fehler beim Senden der Hidetag-Nachricht:', error);
+                throw error;
+            }
         }
-        
-        return await this.client.socket.sendMessage(this.from, {
-            text: text
-        });
+
+        // Normale Reply
+        try {
+            if (mentions.length > 0) {
+                return await this.client.socket.sendMessage(this.from, {
+                    text: text,
+                    mentions: mentions
+                });
+            }
+            
+            return await this.client.socket.sendMessage(this.from, {
+                text: text
+            });
+        } catch (error) {
+            console.error('❌ Fehler beim Senden der Nachricht:', error);
+            throw error;
+        }
     }
 
     async sendImage(imagePath, caption = "", mentions = []) {
-        const message = {
-            image: { url: imagePath },
-            caption: caption
-        };
+        try {
+            const message = {
+                image: { url: imagePath },
+                caption: caption
+            };
 
-        if (mentions.length > 0) {
-            message.mentions = mentions;
+            if (mentions.length > 0) {
+                message.mentions = mentions;
+            }
+
+            return await this.client.socket.sendMessage(this.from, message);
+        } catch (error) {
+            console.error('❌ Fehler beim Senden des Bildes:', error);
+            throw error;
         }
-
-        return await this.client.socket.sendMessage(this.from, message);
     }
 
     async sendSticker(stickerPath) {
-        return await this.client.socket.sendMessage(this.from, {
-            sticker: { url: stickerPath }
-        });
+        try {
+            return await this.client.socket.sendMessage(this.from, {
+                sticker: { url: stickerPath }
+            });
+        } catch (error) {
+            console.error('❌ Fehler beim Senden des Stickers:', error);
+            throw error;
+        }
+    }
+
+    // ===== PROFILE PICTURE FUNCTIONS - NEU! =====
+    
+    async getProfilePicture(jid) {
+        try {
+            // Baileys Funktion für Profilbild-URL
+            const profilePicUrl = await this.client.socket.profilePictureUrl(jid, 'image');
+            return profilePicUrl;
+        } catch (error) {
+            // Fallback: Kein Profilbild verfügbar
+            return null;
+        }
+    }
+
+    async sendProfilePicture(jid, caption = "") {
+        try {
+            const profilePicUrl = await this.getProfilePicture(jid);
+            
+            if (!profilePicUrl) {
+                await this.reply(`❌ Kein Profilbild für diesen User verfügbar.`);
+                return false;
+            }
+
+            // Profilbild als Bild senden
+            await this.sendImage(profilePicUrl, caption);
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Fehler beim Senden des Profilbilds:', error);
+            await this.reply(`❌ Fehler beim Laden des Profilbilds: ${error.message}`);
+            return false;
+        }
     }
 
     async sendAudio(audioPath) {
-        return await this.client.socket.sendMessage(this.from, {
-            audio: { url: audioPath },
-            mimetype: 'audio/mp4'
-        });
+        try {
+            return await this.client.socket.sendMessage(this.from, {
+                audio: { url: audioPath },
+                mimetype: 'audio/mp4'
+            });
+        } catch (error) {
+            console.error('❌ Fehler beim Senden der Audio-Datei:', error);
+            throw error;
+        }
     }
 
     async sendVideo(videoPath, caption = "", mentions = []) {
-        const message = {
-            video: { url: videoPath },
-            caption: caption
-        };
+        try {
+            const message = {
+                video: { url: videoPath },
+                caption: caption
+            };
 
-        if (mentions.length > 0) {
-            message.mentions = mentions;
+            if (mentions.length > 0) {
+                message.mentions = mentions;
+            }
+
+            return await this.client.socket.sendMessage(this.from, message);
+        } catch (error) {
+            console.error('❌ Fehler beim Senden des Videos:', error);
+            throw error;
         }
-
-        return await this.client.socket.sendMessage(this.from, message);
     }
 
     async sendDocument(documentPath, fileName, mentions = []) {
@@ -78,6 +206,147 @@ export class Message {
             document: { url: documentPath },
             fileName: fileName,
             mimetype: 'application/octet-stream'
+        };
+
+        if (mentions.length > 0) {
+            message.mentions = mentions;
+        }
+
+        return await this.client.socket.sendMessage(this.from, message);
+    }
+
+    // ===== ADVANCED MEDIA FEATURES - NEU! =====
+    
+    async sendVoiceMessage(audioPath, mentions = []) {
+        const message = {
+            audio: { url: audioPath },
+            mimetype: 'audio/ogg; codecs=opus',
+            ptt: true // Push-to-talk (Voice Message)
+        };
+
+        if (mentions.length > 0) {
+            message.mentions = mentions;
+        }
+
+        return await this.client.socket.sendMessage(this.from, message);
+    }
+
+    async sendVoiceToMentioned(audioPath) {
+        const mentions = this.getMentions();
+        if (mentions.length === 0) {
+            return await this.sendVoiceMessage(audioPath);
+        }
+
+        const results = [];
+        for (const jid of mentions) {
+            try {
+                const result = await this.client.socket.sendMessage(jid, {
+                    audio: { url: audioPath },
+                    mimetype: 'audio/ogg; codecs=opus',
+                    ptt: true
+                });
+                results.push({ jid, success: true, result });
+            } catch (error) {
+                results.push({ jid, success: false, error: error.message });
+            }
+        }
+        return results;
+    }
+
+    async sendVideoMessage(videoPath, mentions = []) {
+        const message = {
+            video: { url: videoPath },
+            ptv: true, // Push-to-view (Video Message)
+            mimetype: 'video/mp4'
+        };
+
+        if (mentions.length > 0) {
+            message.mentions = mentions;
+        }
+
+        return await this.client.socket.sendMessage(this.from, message);
+    }
+
+    async sendVideoMessageToMentioned(videoPath) {
+        const mentions = this.getMentions();
+        if (mentions.length === 0) {
+            return await this.sendVideoMessage(videoPath);
+        }
+
+        const results = [];
+        for (const jid of mentions) {
+            try {
+                const result = await this.client.socket.sendMessage(jid, {
+                    video: { url: videoPath },
+                    ptv: true,
+                    mimetype: 'video/mp4'
+                });
+                results.push({ jid, success: true, result });
+            } catch (error) {
+                results.push({ jid, success: false, error: error.message });
+            }
+        }
+        return results;
+    }
+
+    async sendGif(gifPath, caption = "", mentions = []) {
+        const message = {
+            video: { url: gifPath },
+            caption: caption,
+            gifPlayback: true,
+            mimetype: 'video/mp4'
+        };
+
+        if (mentions.length > 0) {
+            message.mentions = mentions;
+        }
+
+        return await this.client.socket.sendMessage(this.from, message);
+    }
+
+    async sendGifToMentioned(gifPath, caption = "") {
+        const mentions = this.getMentions();
+        if (mentions.length === 0) {
+            return await this.sendGif(gifPath, caption);
+        }
+
+        const results = [];
+        for (const jid of mentions) {
+            try {
+                const result = await this.client.socket.sendMessage(jid, {
+                    video: { url: gifPath },
+                    caption: caption,
+                    gifPlayback: true,
+                    mimetype: 'video/mp4'
+                });
+                results.push({ jid, success: true, result });
+            } catch (error) {
+                results.push({ jid, success: false, error: error.message });
+            }
+        }
+        return results;
+    }
+
+    async sendVideoWithThumbnail(videoPath, thumbnailPath, caption = "", mentions = []) {
+        const message = {
+            video: { url: videoPath },
+            caption: caption,
+            jpegThumbnail: thumbnailPath,
+            mimetype: 'video/mp4'
+        };
+
+        if (mentions.length > 0) {
+            message.mentions = mentions;
+        }
+
+        return await this.client.socket.sendMessage(this.from, message);
+    }
+
+    async sendImageWithThumbnail(imagePath, thumbnailPath, caption = "", mentions = []) {
+        const message = {
+            image: { url: imagePath },
+            caption: caption,
+            jpegThumbnail: thumbnailPath
         };
 
         if (mentions.length > 0) {
@@ -113,73 +382,112 @@ export class Message {
         try {
             console.log('📊 Sende Poll:', question, options);
             
-            // Baileys V3 Poll Format (korrekte Syntax)
-            const pollMessage = {
-                poll: {
-                    name: question,
-                    values: options,
-                    selectableCount: 1
-                }
-            };
+            // PROBLEM IDENTIFIZIERT: WhatsApp blockiert möglicherweise Bot-Polls
+            // Versuche verschiedene Ansätze
             
-            // Alternative V3 Syntax versuchen
-            const pollMessageV3 = {
-                pollCreationMessage: {
-                    name: question,
-                    options: options.map(option => ({ optionName: option })),
-                    selectableOptionsCount: 1
-                }
-            };
-            
-            console.log('📊 Versuche Standard Poll Format...');
-            
+            // Ansatz 1: Standard Poll ohne selectableCount
             try {
-                const result = await this.client.socket.sendMessage(this.from, pollMessage);
-                console.log('✅ Standard Poll gesendet:', result);
-                return result;
-            } catch (standardError) {
-                console.log('⚠️ Standard Format fehlgeschlagen, versuche V3 Format...');
+                console.log('🧪 Ansatz 1: Standard Poll ohne selectableCount');
+                const basicPoll = {
+                    poll: {
+                        name: question,
+                        values: options
+                    }
+                };
                 
-                const resultV3 = await this.client.socket.sendMessage(this.from, pollMessageV3);
-                console.log('✅ V3 Poll gesendet:', resultV3);
-                return resultV3;
+                const result1 = await this.client.socket.sendMessage(this.from, basicPoll);
+                console.log('✅ Basic Poll gesendet:', result1?.key?.id);
+                
+                // Warte kurz und prüfe ob Poll ankommt
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                console.log('⏳ Poll sollte jetzt sichtbar sein...');
+                return result1;
+                
+            } catch (error1) {
+                console.log('❌ Basic Poll fehlgeschlagen:', error1.message);
+                
+                // Ansatz 2: Poll mit expliziter Konfiguration
+                try {
+                    console.log('🧪 Ansatz 2: Poll mit expliziter Konfiguration');
+                    const configuredPoll = {
+                        poll: {
+                            name: question,
+                            values: options,
+                            selectableCount: 1,
+                            messageSecret: Buffer.from(Array(32).fill(0).map(() => Math.floor(Math.random() * 256)))
+                        }
+                    };
+                    
+                    const result2 = await this.client.socket.sendMessage(this.from, configuredPoll);
+                    console.log('✅ Configured Poll gesendet:', result2?.key?.id);
+                    return result2;
+                    
+                } catch (error2) {
+                    console.log('❌ Configured Poll fehlgeschlagen:', error2.message);
+                    throw error2;
+                }
             }
             
         } catch (error) {
-            console.error('❌ Alle Poll Formate fehlgeschlagen:', error);
-            console.log('🔄 Verwende Fallback...');
+            console.error('❌ Alle Poll-Ansätze fehlgeschlagen:', error.message);
+            console.log('🔄 Verwende intelligenten Fallback...');
             
-            // Fallback: Als interaktive Nachricht mit Emojis
-            let fallbackText = `📊 **${question}**\n\n`;
-            const emojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
-            
-            options.forEach((option, index) => {
-                const emoji = emojis[index] || `${index + 1}️⃣`;
-                fallbackText += `${emoji} ${option}\n`;
-            });
-            
-            fallbackText += `\n_Reagiere mit dem entsprechenden Emoji zum Abstimmen!_`;
-            
-            const fallbackResult = await this.reply(fallbackText);
-            
-            // Auto-Reactions hinzufügen für bessere UX
-            setTimeout(async () => {
-                try {
-                    for (let i = 0; i < Math.min(options.length, emojis.length); i++) {
-                        await new Promise(resolve => setTimeout(resolve, 500)); // Delay zwischen Reactions
-                        await this.client.socket.sendMessage(this.from, {
-                            react: {
-                                text: emojis[i],
-                                key: fallbackResult.key
-                            }
-                        });
+            // INTELLIGENTER FALLBACK: Interaktive Nachricht mit Buttons (falls verfügbar)
+            try {
+                console.log('🧪 Versuche Button-Fallback...');
+                
+                const buttonMessage = {
+                    text: `📊 **${question}**\n\n_Wähle eine Option:_`,
+                    buttons: options.slice(0, 3).map((option, index) => ({
+                        buttonId: `poll_${index}`,
+                        buttonText: { displayText: option },
+                        type: 1
+                    })),
+                    headerType: 1
+                };
+                
+                const buttonResult = await this.client.socket.sendMessage(this.from, buttonMessage);
+                console.log('✅ Button-Fallback erfolgreich:', buttonResult?.key?.id);
+                return buttonResult;
+                
+            } catch (buttonError) {
+                console.log('❌ Button-Fallback fehlgeschlagen:', buttonError.message);
+                
+                // LETZTER FALLBACK: Emoji-basierte Poll
+                console.log('🔄 Verwende Emoji-Fallback...');
+                
+                let fallbackText = `📊 **${question}**\n\n`;
+                const emojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+                
+                options.forEach((option, index) => {
+                    const emoji = emojis[index] || `${index + 1}️⃣`;
+                    fallbackText += `${emoji} ${option}\n`;
+                });
+                
+                fallbackText += `\n_Reagiere mit dem entsprechenden Emoji zum Abstimmen!_`;
+                
+                const fallbackResult = await this.reply(fallbackText);
+                
+                // Auto-Reactions hinzufügen
+                setTimeout(async () => {
+                    try {
+                        for (let i = 0; i < Math.min(options.length, emojis.length); i++) {
+                            await new Promise(resolve => setTimeout(resolve, 200));
+                            await this.client.socket.sendMessage(this.from, {
+                                react: {
+                                    text: emojis[i],
+                                    key: fallbackResult.key
+                                }
+                            });
+                        }
+                        console.log('✅ Emoji-Fallback mit Auto-Reactions bereit');
+                    } catch (reactError) {
+                        console.log('⚠️ Auto-Reactions fehlgeschlagen:', reactError.message);
                     }
-                } catch (reactError) {
-                    console.log('⚠️ Konnte keine Auto-Reactions hinzufügen:', reactError.message);
-                }
-            }, 1000);
-            
-            return fallbackResult;
+                }, 300);
+                
+                return fallbackResult;
+            }
         }
     }
 
@@ -189,24 +497,58 @@ export class Message {
         }
 
         try {
-            return await this.client.socket.sendMessage(this.from, {
+            console.log('📊 Sende Multi-Poll:', question, options, 'Max:', maxSelections);
+            
+            // KORRIGIERTE Multi-Poll Syntax
+            const multiPollMessage = {
                 poll: {
                     name: question,
                     values: options,
                     selectableCount: maxSelections
                 }
-            });
+            };
+            
+            console.log('📋 Multi-Poll Message:', JSON.stringify(multiPollMessage, null, 2));
+            
+            const result = await this.client.socket.sendMessage(this.from, multiPollMessage);
+            console.log('✅ Multi-Poll erfolgreich gesendet:', result?.key?.id);
+            return result;
+            
         } catch (error) {
-            console.error('❌ Multi-Poll Fehler:', error);
+            console.error('❌ Multi-Poll Fehler:', error.message);
             
-            // Fallback: Als normale Nachricht
+            // Fallback: Als normale Nachricht mit Hinweis
             let fallbackText = `📊 **${question}**\n_(Max. ${maxSelections} Auswahlen)_\n\n`;
-            options.forEach((option, index) => {
-                fallbackText += `${index + 1}. ${option}\n`;
-            });
-            fallbackText += `\n_Reagiere mit den entsprechenden Zahlen!_`;
+            const emojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
             
-            return await this.reply(fallbackText);
+            options.forEach((option, index) => {
+                const emoji = emojis[index] || `${index + 1}️⃣`;
+                fallbackText += `${emoji} ${option}\n`;
+            });
+            
+            fallbackText += `\n_Reagiere mit bis zu ${maxSelections} Emojis!_`;
+            
+            const fallbackResult = await this.reply(fallbackText);
+            
+            // Auto-Reactions für Multi-Poll
+            setTimeout(async () => {
+                try {
+                    for (let i = 0; i < Math.min(options.length, emojis.length); i++) {
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        await this.client.socket.sendMessage(this.from, {
+                            react: {
+                                text: emojis[i],
+                                key: fallbackResult.key
+                            }
+                        });
+                    }
+                    console.log('✅ Multi-Poll Auto-Reactions hinzugefügt');
+                } catch (reactError) {
+                    console.log('⚠️ Multi-Poll Auto-Reactions fehlgeschlagen:', reactError.message);
+                }
+            }, 500);
+            
+            return fallbackResult;
         }
     }
 
@@ -253,6 +595,25 @@ export class Message {
         const mentionText = text + ' ' + allMembers.map(id => `@${id.split('@')[0]}`).join(' ');
         
         return await this.reply(mentionText, allMembers);
+    }
+
+    // Mention mit Typing - Neue Funktion für bessere UX
+    async slowTypeWithMention(text, userJid) {
+        const senderName = userJid.split('@')[0];
+        const mentionText = text.replace('@user', `@${senderName}`);
+        return await this.slowType(mentionText, [userJid]);
+    }
+
+    async quickTypeWithMention(text, userJid) {
+        const senderName = userJid.split('@')[0];
+        const mentionText = text.replace('@user', `@${senderName}`);
+        return await this.quickType(mentionText, [userJid]);
+    }
+
+    async normalTypeWithMention(text, userJid) {
+        const senderName = userJid.split('@')[0];
+        const mentionText = text.replace('@user', `@${senderName}`);
+        return await this.normalType(mentionText, [userJid]);
     }
 
     // ===== PERMISSION SYSTEM =====
@@ -364,6 +725,86 @@ export class Message {
 
     getSender() {
         return this.raw.key.participant || this.raw.key.remoteJid;
+    }
+
+    // ===== STICKER CREATION SYSTEM =====
+    
+    get create() {
+        return new StickerCreator(this);
+    }
+
+    // ===== VISUAL RECORDING SYSTEM =====
+
+    async startRecording() {
+        try {
+            await this.client.socket.sendPresenceUpdate('recording', this.from);
+            console.log('🎤 Recording indicator gestartet');
+            return true;
+        } catch (error) {
+            console.error('❌ Fehler beim Starten des Recording:', error);
+            return false;
+        }
+    }
+
+    async stopRecording() {
+        try {
+            await this.client.socket.sendPresenceUpdate('paused', this.from);
+            console.log('⏹️ Recording indicator gestoppt');
+            return true;
+        } catch (error) {
+            console.error('❌ Fehler beim Stoppen des Recording:', error);
+            return false;
+        }
+    }
+
+    async visualRecord(isRecording = true) {
+        try {
+            if (isRecording) {
+                await this.client.socket.sendPresenceUpdate('recording', this.from);
+                console.log('🎤 Recording indicator gestartet');
+            } else {
+                await this.client.socket.sendPresenceUpdate('paused', this.from);
+                console.log('⏹️ Recording indicator gestoppt');
+            }
+        } catch (error) {
+            console.error('❌ Fehler beim Recording Indicator:', error);
+        }
+    }
+
+    async recordAndSend(messageFunction, recordingDuration = 3000) {
+        try {
+            // Starte Recording
+            await this.visualRecord(true);
+            
+            // Warte die angegebene Zeit
+            await new Promise(resolve => setTimeout(resolve, recordingDuration));
+            
+            // Stoppe Recording
+            await this.visualRecord(false);
+            
+            // Kurze Pause für Realismus
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            // Führe die Message-Funktion aus
+            return await messageFunction();
+            
+        } catch (error) {
+            console.error('❌ Fehler beim recordAndSend:', error);
+            return await messageFunction();
+        }
+    }
+
+    async recordAndReply(text, recordingDuration = 3000, mentions = []) {
+        return await this.recordAndSend(
+            () => this.reply(text, mentions),
+            recordingDuration
+        );
+    }
+
+    async simulateRecording(duration = 3000) {
+        await this.visualRecord(true);
+        await new Promise(resolve => setTimeout(resolve, duration));
+        await this.visualRecord(false);
     }
 
     // ===== STATISTICS SYSTEM =====

@@ -16,7 +16,7 @@ export class DeviceManager {
         this.currentDeviceIndex = 0;
         this.eventHandlers = new Map();
         
-        console.log(`🔧 DeviceManager initialisiert (Max: ${this.config.maxDevices} Devices)`);
+        // Schöne Console ist jetzt Standard - keine Logs mehr hier
     }
 
     // ===== DEVICE MANAGEMENT =====
@@ -117,18 +117,43 @@ export class DeviceManager {
     }
 
     async connectAll() {
-        console.log(`🚀 Verbinde alle ${this.devices.size} Devices...`);
+        console.log(`🚀 Sequenzielle Verbindung aller ${this.devices.size} Devices...`);
+        console.log("📱 QR-Codes werden nacheinander angezeigt!");
         
-        const promises = Array.from(this.devices.keys()).map(deviceId => 
-            this.connectDevice(deviceId).catch(error => {
-                console.error(`❌ Device '${deviceId}' Verbindung fehlgeschlagen:`, error.message);
-                return null;
-            })
-        );
-
-        const results = await Promise.allSettled(promises);
-        const connected = results.filter(r => r.status === 'fulfilled' && r.value).length;
+        const deviceIds = Array.from(this.devices.keys());
+        const results = [];
+        let connected = 0;
         
+        for (let i = 0; i < deviceIds.length; i++) {
+            const deviceId = deviceIds[i];
+            
+            try {
+                console.log(`\n📱 Device ${i + 1}/${deviceIds.length}: '${deviceId}'`);
+                console.log("⏳ Scanne den QR-Code für dieses Device...");
+                
+                await this.connectDevice(deviceId);
+                connected++;
+                results.push({ deviceId, status: 'connected' });
+                
+                console.log(`✅ Device '${deviceId}' verbunden! Weiter zum nächsten...`);
+                
+                // Kurze Pause zwischen Devices
+                if (i < deviceIds.length - 1) {
+                    console.log("⏸️ 3 Sekunden Pause...");
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                }
+                
+            } catch (error) {
+                console.error(`❌ Device '${deviceId}' fehlgeschlagen:`, error.message);
+                results.push({ deviceId, status: 'failed', error: error.message });
+                
+                // Weiter mit nächstem Device
+                console.log("➡️ Weiter mit nächstem Device...");
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+        }
+        
+        console.log(`\n🎉 Alle Devices verarbeitet!`);
         console.log(`✅ ${connected}/${this.devices.size} Devices erfolgreich verbunden`);
         
         if (connected === 0) {

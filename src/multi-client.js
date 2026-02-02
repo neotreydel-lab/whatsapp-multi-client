@@ -1,12 +1,29 @@
 import { DeviceManager } from "./device-manager.js";
 import { Message } from "./message.js";
+import { ConsoleLogger } from "./console-logger.js";
 
 export class MultiWhatsAppClient {
     constructor(options = {}) {
+        // Console Logger initialisieren
+        this.logger = new ConsoleLogger({
+            verbose: options.verbose || false,
+            silent: options.silent || false
+        });
+        
         this.deviceManager = new DeviceManager({
             maxDevices: options.maxDevices || 3,
             loadBalancing: options.loadBalancing || 'round-robin',
             syncEvents: options.syncEvents !== false,
+            
+            // ROBUSTE CONNECTION DEFAULTS - NEU!
+            maxReconnectAttempts: options.maxReconnectAttempts || 100,
+            reconnectInterval: options.reconnectInterval || 2000,
+            exponentialBackoff: options.exponentialBackoff !== false,
+            maxBackoffDelay: options.maxBackoffDelay || 30000,
+            heartbeatInterval: options.heartbeatInterval || 20000,
+            connectionTimeout: options.connectionTimeout || 180000,
+            keepAlive: options.keepAlive !== false,
+            quietHeartbeat: options.quietHeartbeat !== false, // Heartbeat-Spam deaktivieren
             ...options
         });
         
@@ -17,7 +34,9 @@ export class MultiWhatsAppClient {
         // Device Manager Events weiterleiten
         this.setupDeviceManagerEvents();
         
-        console.log("🚀 MultiWhatsAppClient initialisiert");
+        // Schöne Console Ausgabe statt Spam
+        this.logger.showBanner();
+        this.logger.info("Multi-Device Bot wird initialisiert...");
     }
 
     // ===== DEVICE MANAGEMENT =====
@@ -46,13 +65,66 @@ export class MultiWhatsAppClient {
     
     async connect(deviceIds = null) {
         if (deviceIds) {
-            // Spezifische Devices verbinden
-            const promises = deviceIds.map(id => this.deviceManager.connectDevice(id));
-            return await Promise.allSettled(promises);
+            // Spezifische Devices sequenziell verbinden
+            return await this.connectDevicesSequentially(deviceIds);
         } else {
-            // Alle Devices verbinden
-            return await this.deviceManager.connectAll();
+            // Alle Devices sequenziell verbinden
+            const allDeviceIds = Array.from(this.deviceManager.devices.keys());
+            return await this.connectDevicesSequentially(allDeviceIds);
         }
+    }
+
+    // NEUE SEQUENZIELLE VERBINDUNG - Ein QR nach dem anderen!
+    async connectDevicesSequentially(deviceIds) {
+        // Schöne Setup Animation
+        await this.logger.animateSetup();
+        
+        const results = [];
+        let connectedCount = 0;
+        
+        for (let i = 0; i < deviceIds.length; i++) {
+            const deviceId = deviceIds[i];
+            
+            try {
+                // QR-Code Animation
+                await this.logger.animateQRGeneration(deviceId, i + 1, deviceIds.length);
+                
+                // Verbinde ein Device und warte bis es fertig ist
+                const client = await this.deviceManager.connectDevice(deviceId);
+                
+                // Connection Animation - Device sollte authentifiziert sein nach connectDevice
+                await this.logger.animateConnection(deviceId, true);
+                
+                connectedCount++;
+                results.push({ deviceId, status: 'connected', client });
+                
+                // Kurze Pause zwischen Devices
+                if (i < deviceIds.length - 1) {
+                    await this.logger.showDevicePause(3);
+                }
+                
+            } catch (error) {
+                this.logger.error(`Device '${deviceId}' Verbindung fehlgeschlagen: ${error.message}`);
+                results.push({ deviceId, status: 'failed', error: error.message });
+                
+                // Frage ob weiter machen
+                this.logger.warning("Soll mit dem nächsten Device fortgefahren werden? (Automatisch ja in 5s)");
+                await new Promise(resolve => setTimeout(resolve, 5000));
+            }
+        }
+        
+        // Finale schöne Zusammenfassung
+        const connectedDeviceNames = results
+            .filter(r => r.status === 'connected')
+            .map(r => r.deviceId);
+            
+        this.logger.showFinalSummary(connectedDeviceNames);
+        
+        if (connectedCount === 0) {
+            throw new Error("❌ Keine Devices konnten verbunden werden!");
+        }
+        
+        return results;
     }
 
     async disconnect(deviceIds = null) {
