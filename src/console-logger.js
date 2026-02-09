@@ -71,20 +71,10 @@ export class ConsoleLogger {
         this.updateProgressBar('setup', 100, '🔧 System bereit');
         this.completeProgressBar('setup');
         
-        // Zusammenfassung
-        this.showSystemSummary();
+        // Keine System Summary mehr - wird später in showDynamicReadyMessage angezeigt
     }
 
-    showSystemSummary() {
-        if (this.silent) return;
-        
-        console.log(`
-✅ System bereit
-   ├─ Storage: ./waengine-data
-   ├─ Devices: 2/2 konfiguriert
-   ├─ Plugins: 8 verfügbar
-   └─ Prefix: "!"`);
-    }
+    // showSystemSummary() entfernt - wird durch showDynamicReadyMessage ersetzt
 
     // ===== QR-CODE ANIMATION =====
     async animateQRGeneration(deviceName = 'bot1', deviceNumber = 1, totalDevices = 2) {
@@ -209,12 +199,43 @@ export class ConsoleLogger {
             console.log(`   ${prefix} ${device}: Online & Authentifiziert`);
         });
         
+        // Dynamische Ready Message mit echten Daten
+        this.showDynamicReadyMessage();
+    }
+
+    // Dynamische Ready Message - NEU!
+    showDynamicReadyMessage(client = null) {
+        // Bot-Name ermitteln
+        const botName = client?.socket?.user?.name || 
+                       client?.socket?.user?.verifiedName || 
+                       'WAEngine Bot';
+        
+        // Prefix ermitteln
+        const prefix = client?.prefix || null;
+        
+        // Commands zählen
+        const commandCount = client?.commands?.size || 0;
+        
+        // Plugins zählen
+        const pluginCount = client?.plugins?.size || 0;
+        
         console.log(`
-🚀 WAEngine ist bereit!
-   ├─ Prefix: "!"
-   ├─ Commands: 12 verfügbar
-   ├─ Plugins: 8 geladen
-   └─ Status: 🟢 Online & Authentifiziert
+🚀 ${botName} ist bereit!`);
+        
+        // Nur anzeigen wenn vorhanden
+        if (prefix) {
+            console.log(`   ├─ Prefix: "${prefix}"`);
+        }
+        
+        if (commandCount > 0) {
+            console.log(`   ├─ Commands: ${commandCount} verfügbar`);
+        }
+        
+        if (pluginCount > 0) {
+            console.log(`   ├─ Plugins: ${pluginCount} geladen`);
+        }
+        
+        console.log(`   └─ Status: 🟢 Online & Authentifiziert
 
 💬 Bot wartet auf Nachrichten...`);
     }

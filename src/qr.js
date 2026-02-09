@@ -11,6 +11,8 @@ let page = null;
 let httpServer = null;
 let lastQRTime = 0;
 let qrDisplayCount = 0;
+let qrCleanupTimer = null;
+let browserCleanupTimer = null;
 
 // Cross-Platform Browser Detection
 const BROWSERS = {
@@ -100,8 +102,8 @@ export async function generateQRCode(qrData = null, options = {}) {
             qrDisplayCount++;
         }
 
-        // Browser QR nur versuchen wenn nicht explizit deaktiviert
-        if (qrData && options.skipBrowser !== true) {
+        // Browser QR NUR wenn explizit aktiviert (nicht mehr automatisch)
+        if (qrData && options.openBrowser === true) {
             await openUniversalBrowser(qrData);
         }
 
@@ -133,7 +135,32 @@ export async function generateQRCode(qrData = null, options = {}) {
 export function resetQRStatus() {
     lastQRTime = 0;
     qrDisplayCount = 0;
+    
+    // Clear all timers
+    if (qrCleanupTimer) {
+        clearTimeout(qrCleanupTimer);
+        qrCleanupTimer = null;
+    }
+    
+    if (browserCleanupTimer) {
+        clearTimeout(browserCleanupTimer);
+        browserCleanupTimer = null;
+    }
+    
     console.log("🔄 QR-Status zurückgesetzt");
+}
+
+// Automatic cleanup after timeout
+export function scheduleQRCleanup(timeoutMs = 120000) {
+    if (qrCleanupTimer) {
+        clearTimeout(qrCleanupTimer);
+    }
+    
+    qrCleanupTimer = setTimeout(async () => {
+        console.log("⏰ QR-Code Timeout - automatische Bereinigung");
+        await closeBrowser();
+        resetQRStatus();
+    }, timeoutMs);
 }
 
 // QR-Code manuell anzeigen (für Debugging)
@@ -518,23 +545,72 @@ async function generateQRHTML(qrData) {
 
 export async function closeBrowser() {
     try {
-        // Playwright Browser schließen
-        if (browser) {
-            await browser.close();
-            browser = null;
-            page = null;
-            console.log("🔴 Playwright Browser geschlossen");
+        // Clear all timers first
+        if (qrCleanupTimer) {
+            clearTimeout(qrCleanupTimer);
+            qrCleanupTimer = null;
         }
         
-        // HTTP Server schließen
+        if (browserCleanupTimer) {
+            clearTimeout(browserCleanupTimer);
+            browserCleanupTimer = null;
+        }
+        
+        // Playwright Browser schließen mit Timeout
+        if (browser) {
+            try {
+                await Promise.race([
+                    browser.close(),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Browser close timeout')), 5000))
+                ]);
+                console.log("🔴 Playwright Browser geschlossen");
+            } catch (closeError) {
+                console.log("⚠️ Browser close timeout - force killing");
+                try {
+                    await browser.close({ force: true });
+                } catch (forceError) {
+                    console.log("⚠️ Force close failed, browser may remain open");
+                }
+            } finally {
+                browser = null;
+                page = null;
+            }
+        }
+        
+        // HTTP Server schließen mit Timeout
         if (httpServer) {
-            httpServer.close();
-            httpServer = null;
-            console.log("🔴 HTTP Server geschlossen");
+            try {
+                await new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => {
+                        reject(new Error('Server close timeout'));
+                    }, 3000);
+                    
+                    httpServer.close((err) => {
+                        clearTimeout(timeout);
+                        if (err) reject(err);
+                        else resolve();
+                    });
+                });
+                console.log("🔴 HTTP Server geschlossen");
+            } catch (serverError) {
+                console.log("⚠️ Server close timeout - force destroying");
+                try {
+                    httpServer.closeAllConnections?.();
+                } catch (destroyError) {
+                    // Silent fail
+                }
+            } finally {
+                httpServer = null;
+            }
         }
         
     } catch (error) {
         console.error("❌ Fehler beim Schließen:", error.message);
+    } finally {
+        // Ensure cleanup even on error
+        browser = null;
+        page = null;
+        httpServer = null;
     }
 }
 

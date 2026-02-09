@@ -83,7 +83,17 @@ export async function getSocket() {
         
         // WICHTIG: Alle Events loggen für Debug
         socket.ev.on("messages.upsert", (data) => {
-            console.log("🚨 RAW MESSAGE EVENT:", JSON.stringify(data, null, 2));
+            console.log("🚨 RAW MESSAGE EVENT:");
+            console.log(`   Type: ${data.type}`);
+            console.log(`   Messages: ${data.messages.length}`);
+            data.messages.forEach((msg, i) => {
+                console.log(`   Message ${i + 1}:`, {
+                    from: msg.key.remoteJid,
+                    fromMe: msg.key.fromMe,
+                    hasMessage: !!msg.message,
+                    type: Object.keys(msg.message || {})[0]
+                });
+            });
         });
         
         socket.ev.on("chats.set", (data) => {

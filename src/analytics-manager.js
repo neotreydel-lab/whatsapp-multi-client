@@ -220,10 +220,10 @@ export class AnalyticsManager {
         // Store alerts
         if (alerts.length > 0) {
             this.alerts.push(...alerts);
-            this.storage.write.in("analytics").push("alerts", alerts);
             
-            // Emit alert events
+            // Store each alert individually
             alerts.forEach(alert => {
+                this.storage.write.in("analytics-alerts").push(alert);
                 this.client.emit('performance_alert', alert);
             });
         }

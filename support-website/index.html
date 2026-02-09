@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAEngine Support - Hilfe & Ticket System</title>
+    <link rel="stylesheet" href="css/style-clean.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-rocket"></i>
+                <span>WAEngine Support</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#faq" class="nav-link">FAQ</a>
+                <a href="#docs" class="nav-link">Docs</a>
+                <a href="#contact" class="nav-link">Kontakt</a>
+                <a href="#admin" class="nav-link admin-link" onclick="showAdminLogin()">
+                    <i class="fas fa-cog"></i> Admin
+                </a>
+            </div>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1>WAEngine Support Center</h1>
+                <p>Benötigen Sie Hilfe mit WAEngine? Wir sind hier, um zu helfen!</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" onclick="openTicketModal()">
+                        <i class="fas fa-ticket-alt"></i>
+                        Ticket erstellen
+                    </button>
+                    <button class="btn btn-secondary" onclick="showTicketStatus()">
+                        <i class="fas fa-search"></i>
+                        Ticket Status
+                    </button>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="hero-graphic">
+                    <i class="fas fa-headset"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+        <div class="container">
+            <h2>Schnelle Hilfe</h2>
+            <div class="actions-grid">
+                <div class="action-card" onclick="openTicketModal('bug')">
+                    <i class="fas fa-bug"></i>
+                    <h3>Bug Report</h3>
+                    <p>Fehler melden</p>
+                </div>
+                <div class="action-card" onclick="openTicketModal('feature')">
+                    <i class="fas fa-lightbulb"></i>
+                    <h3>Feature Request</h3>
+                    <p>Neue Funktion vorschlagen</p>
+                </div>
+                <div class="action-card" onclick="openTicketModal('help')">
+                    <i class="fas fa-question-circle"></i>
+                    <h3>Hilfe & Support</h3>
+                    <p>Fragen stellen</p>
+                </div>
+                <div class="action-card" onclick="openTicketModal('installation')">
+                    <i class="fas fa-download"></i>
+                    <h3>Installation</h3>
+                    <p>Setup Probleme</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="faq-section">
+        <div class="container">
+            <h2>Häufig gestellte Fragen</h2>
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>Wie installiere ich WAEngine?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Installation ist einfach mit npm:</p>
+                        <code>npm install waengine</code>
+                        <p>Danach können Sie sofort loslegen mit einem 3-Zeilen Bot!</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>Welche Plattformen werden unterstützt?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>WAEngine läuft auf allen Plattformen:</p>
+                        <ul>
+                            <li>Windows, macOS, Linux</li>
+                            <li>Android (Termux), iOS (iSH)</li>
+                            <li>Docker, Cloud Platforms</li>
+                            <li>Raspberry Pi, ARM Devices</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>Wie erstelle ich einen einfachen Bot?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Mit der EasyBot API in nur 3 Zeilen:</p>
+                        <pre><code>import { quickBot } from "waengine";
+
+quickBot()
+    .when("hello").reply("Hi! 👋")
+    .start();</code></pre>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>QR Code wird nicht angezeigt - was tun?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Versuchen Sie Terminal QR als Fallback:</p>
+                        <pre><code>const client = new WhatsAppClient({
+    printQR: true // Terminal QR
+});</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Documentation Links -->
+    <section id="docs" class="docs-section">
+        <div class="container">
+            <h2>Dokumentation</h2>
+            <div class="docs-grid">
+                <div class="doc-card">
+                    <i class="fas fa-rocket"></i>
+                    <h3>Quick Start</h3>
+                    <p>Erste Schritte mit WAEngine</p>
+                    <a href="#" class="doc-link">Lesen →</a>
+                </div>
+                <div class="doc-card">
+                    <i class="fas fa-book"></i>
+                    <h3>API Referenz</h3>
+                    <p>Vollständige API Dokumentation</p>
+                    <a href="#" class="doc-link">Lesen →</a>
+                </div>
+                <div class="doc-card">
+                    <i class="fas fa-code"></i>
+                    <h3>Beispiele</h3>
+                    <p>Code-Beispiele und Tutorials</p>
+                    <a href="#" class="doc-link">Lesen →</a>
+                </div>
+                <div class="doc-card">
+                    <i class="fas fa-puzzle-piece"></i>
+                    <h3>Plugins</h3>
+                    <p>Plugin System Dokumentation</p>
+                    <a href="#" class="doc-link">Lesen →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <h2>Kontakt</h2>
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <h3>Weitere Hilfe benötigt?</h3>
+                    <p>Unser Support-Team ist hier, um zu helfen!</p>
+                    <div class="contact-methods">
+                        <div class="contact-method">
+                            <i class="fas fa-envelope"></i>
+                            <span>support@waengine.com</span>
+                        </div>
+                        <div class="contact-method">
+                            <i class="fab fa-github"></i>
+                            <span>GitHub Issues</span>
+                        </div>
+                        <div class="contact-method">
+                            <i class="fab fa-discord"></i>
+                            <span>Discord Community</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form">
+                    <h3>Schnell-Kontakt</h3>
+                    <form id="quickContactForm">
+                        <input type="text" placeholder="Ihr Name" required>
+                        <input type="email" placeholder="E-Mail Adresse" required>
+                        <textarea placeholder="Ihre Nachricht" rows="4" required></textarea>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                            Senden
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Admin Login</h2>
+                <span class="close" onclick="closeAdminLogin()">&times;</span>
+            </div>
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label for="adminUsername">Benutzername</label>
+                    <input type="text" id="adminUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminPassword">Passwort</label>
+                    <input type="password" id="adminPassword" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeAdminLogin()">
+                        Abbrechen
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Anmelden
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Panel (Hidden by default) -->
+    <div id="adminPanel" class="admin-panel" style="display: none;">
+        <div class="admin-header">
+            <div class="admin-nav">
+                <h2><i class="fas fa-shield-alt"></i> Admin Panel</h2>
+                <div class="admin-user">
+                    <span id="adminUserName">Admin</span>
+                    <button class="btn btn-small" onclick="logoutAdmin()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="showAdminTab('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </button>
+                <button class="admin-tab" onclick="showAdminTab('tickets')">
+                    <i class="fas fa-ticket-alt"></i> Tickets
+                </button>
+                <button class="admin-tab" onclick="showAdminTab('users')">
+                    <i class="fas fa-users"></i> Benutzer
+                </button>
+                <button class="admin-tab" onclick="showAdminTab('settings')">
+                    <i class="fas fa-cog"></i> Einstellungen
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="adminDashboard" class="admin-content">
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalTickets">0</h3>
+                        <p>Gesamt Tickets</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="openTickets">0</h3>
+                        <p>Offene Tickets</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="closedTickets">0</h3>
+                        <p>Geschlossene Tickets</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="urgentTickets">0</h3>
+                        <p>Dringende Tickets</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-charts">
+                <div class="chart-container">
+                    <h3>Tickets diese Woche</h3>
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Ticket Typen</h3>
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="recent-activity">
+                <h3>Letzte Aktivitäten</h3>
+                <div id="recentActivities" class="activity-list">
+                    <!-- Activities will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tickets Tab -->
+        <div id="adminTickets" class="admin-content" style="display: none;">
+            <div class="tickets-header">
+                <h3>Ticket Management</h3>
+                <div class="tickets-filters">
+                    <select id="statusFilter" onchange="filterTickets()">
+                        <option value="">Alle Status</option>
+                        <option value="open">Offen</option>
+                        <option value="in-progress">In Bearbeitung</option>
+                        <option value="waiting">Warten auf Antwort</option>
+                        <option value="closed">Geschlossen</option>
+                    </select>
+                    <select id="priorityFilter" onchange="filterTickets()">
+                        <option value="">Alle Prioritäten</option>
+                        <option value="urgent">Dringend</option>
+                        <option value="high">Hoch</option>
+                        <option value="medium">Mittel</option>
+                        <option value="low">Niedrig</option>
+                    </select>
+                    <input type="text" id="searchTickets" placeholder="Suchen..." onkeyup="filterTickets()">
+                </div>
+            </div>
+
+            <div class="tickets-table">
+                <table id="ticketsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Betreff</th>
+                            <th>Benutzer</th>
+                            <th>Typ</th>
+                            <th>Priorität</th>
+                            <th>Status</th>
+                            <th>Erstellt</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ticketsTableBody">
+                        <!-- Tickets will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="adminUsers" class="admin-content" style="display: none;">
+            <div class="users-header">
+                <h3>Benutzer Management</h3>
+                <button class="btn btn-primary" onclick="showAddUserModal()">
+                    <i class="fas fa-plus"></i> Benutzer hinzufügen
+                </button>
+            </div>
+
+            <div class="users-table">
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>E-Mail</th>
+                            <th>Tickets</th>
+                            <th>Registriert</th>
+                            <th>Status</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Users will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="adminSettings" class="admin-content" style="display: none;">
+            <div class="settings-container">
+                <div class="settings-section">
+                    <h3>Allgemeine Einstellungen</h3>
+                    <form id="generalSettings">
+                        <div class="form-group">
+                            <label for="siteName">Website Name</label>
+                            <input type="text" id="siteName" value="WAEngine Support">
+                        </div>
+                        <div class="form-group">
+                            <label for="supportEmail">Support E-Mail</label>
+                            <input type="email" id="supportEmail" value="support@waengine.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="autoResponse">Auto-Antwort aktiviert</label>
+                            <input type="checkbox" id="autoResponse" checked>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Speichern</button>
+                    </form>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Ticket Einstellungen</h3>
+                    <form id="ticketSettings">
+                        <div class="form-group">
+                            <label for="defaultPriority">Standard Priorität</label>
+                            <select id="defaultPriority">
+                                <option value="low">Niedrig</option>
+                                <option value="medium" selected>Mittel</option>
+                                <option value="high">Hoch</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="autoAssign">Auto-Zuweisung</label>
+                            <input type="checkbox" id="autoAssign">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Speichern</button>
+                    </form>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Benachrichtigungen</h3>
+                    <form id="notificationSettings">
+                        <div class="form-group">
+                            <label for="emailNotifications">E-Mail Benachrichtigungen</label>
+                            <input type="checkbox" id="emailNotifications" checked>
+                        </div>
+                        <div class="form-group">
+                            <label for="slackWebhook">Slack Webhook URL</label>
+                            <input type="url" id="slackWebhook" placeholder="https://hooks.slack.com/...">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Speichern</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Detail Modal -->
+    <div id="ticketDetailModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 id="ticketDetailTitle">Ticket Details</h2>
+                <span class="close" onclick="closeTicketDetail()">&times;</span>
+            </div>
+            <div class="ticket-detail-content">
+                <div class="ticket-info">
+                    <div class="ticket-meta">
+                        <div class="meta-item">
+                            <label>Ticket ID:</label>
+                            <span id="detailTicketId"></span>
+                        </div>
+                        <div class="meta-item">
+                            <label>Status:</label>
+                            <select id="detailStatus" onchange="updateTicketStatus()">
+                                <option value="open">Offen</option>
+                                <option value="in-progress">In Bearbeitung</option>
+                                <option value="waiting">Warten auf Antwort</option>
+                                <option value="closed">Geschlossen</option>
+                            </select>
+                        </div>
+                        <div class="meta-item">
+                            <label>Priorität:</label>
+                            <select id="detailPriority" onchange="updateTicketPriority()">
+                                <option value="low">Niedrig</option>
+                                <option value="medium">Mittel</option>
+                                <option value="high">Hoch</option>
+                                <option value="urgent">Dringend</option>
+                            </select>
+                        </div>
+                        <div class="meta-item">
+                            <label>Zugewiesen an:</label>
+                            <select id="detailAssignee" onchange="updateTicketAssignee()">
+                                <option value="">Nicht zugewiesen</option>
+                                <option value="admin">Admin</option>
+                                <option value="support1">Support Agent 1</option>
+                                <option value="support2">Support Agent 2</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="ticket-description">
+                        <h4>Beschreibung</h4>
+                        <div id="ticketDescription"></div>
+                    </div>
+                </div>
+
+                <div class="ticket-conversation">
+                    <h4>Konversation</h4>
+                    <div id="ticketMessages" class="messages-container">
+                        <!-- Messages will be loaded here -->
+                    </div>
+                    
+                    <div class="reply-form">
+                        <textarea id="replyMessage" placeholder="Antwort schreiben..." rows="4"></textarea>
+                        <div class="reply-actions">
+                            <label>
+                                <input type="checkbox" id="internalNote"> Interne Notiz
+                            </label>
+                            <button class="btn btn-primary" onclick="sendReply()">
+                                <i class="fas fa-paper-plane"></i> Senden
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="ticketModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Support Ticket erstellen</h2>
+                <span class="close" onclick="closeTicketModal()">&times;</span>
+            </div>
+            <form id="ticketForm">
+                <div class="form-group">
+                    <label for="ticketType">Ticket Typ</label>
+                    <select id="ticketType" required>
+                        <option value="">Bitte wählen...</option>
+                        <option value="bug">🐛 Bug Report</option>
+                        <option value="feature">💡 Feature Request</option>
+                        <option value="help">❓ Hilfe & Support</option>
+                        <option value="installation">📦 Installation Problem</option>
+                        <option value="documentation">📚 Dokumentation</option>
+                        <option value="other">🔧 Sonstiges</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ticketPriority">Priorität</label>
+                    <select id="ticketPriority" required>
+                        <option value="low">🟢 Niedrig</option>
+                        <option value="medium" selected>🟡 Mittel</option>
+                        <option value="high">🟠 Hoch</option>
+                        <option value="urgent">🔴 Dringend</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="userName">Ihr Name</label>
+                        <input type="text" id="userName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="userEmail">E-Mail</label>
+                        <input type="email" id="userEmail" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ticketSubject">Betreff</label>
+                    <input type="text" id="ticketSubject" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ticketDescription">Beschreibung</label>
+                    <textarea id="ticketDescription" rows="6" required 
+                              placeholder="Beschreiben Sie Ihr Problem oder Ihre Anfrage so detailliert wie möglich..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="systemInfo">System Information (optional)</label>
+                    <textarea id="systemInfo" rows="3" 
+                              placeholder="OS, Node.js Version, WAEngine Version, etc."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeTicketModal()">
+                        Abbrechen
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-ticket-alt"></i>
+                        Ticket erstellen
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Ticket Status Modal -->
+    <div id="statusModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ticket Status prüfen</h2>
+                <span class="close" onclick="closeStatusModal()">&times;</span>
+            </div>
+            <div class="status-search">
+                <div class="form-group">
+                    <label for="ticketId">Ticket ID oder E-Mail</label>
+                    <input type="text" id="ticketId" placeholder="z.B. WAE-2024-001 oder ihre@email.com">
+                </div>
+                <button class="btn btn-primary" onclick="searchTicket()">
+                    <i class="fas fa-search"></i>
+                    Suchen
+                </button>
+            </div>
+            <div id="ticketResults"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>WAEngine</h3>
+                    <p>Die mächtigste WhatsApp Bot Library mit 400+ Features</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="#docs">Dokumentation</a></li>
+                        <li><a href="admin.html">Admin Panel</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Community</h3>
+                    <ul>
+                        <li><a href="#">GitHub</a></li>
+                        <li><a href="#">Discord</a></li>
+                        <li><a href="#">NPM</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 WAEngine. Made with ❤️ for WhatsApp Automation</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Success Toast -->
+    <div id="toast" class="toast">
+        <div class="toast-content">
+            <i class="fas fa-check-circle"></i>
+            <span id="toastMessage">Ticket erfolgreich erstellt!</span>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Admin Login</h2>
+                <span class="close" onclick="closeAdminLogin()">&times;</span>
+            </div>
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label for="adminUsername">Benutzername</label>
+                    <input type="text" id="adminUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminPassword">Passwort</label>
+                    <input type="password" id="adminPassword" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeAdminLogin()">
+                        Abbrechen
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Anmelden
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Panel (Hidden by default) -->
+    <div id="adminPanel" class="admin-panel" style="display: none;">
+        <div class="admin-header">
+            <div class="admin-nav">
+                <h2><i class="fas fa-shield-alt"></i> Admin Panel</h2>
+                <div class="admin-user">
+                    <span id="adminUserName">Admin</span>
+                    <button class="btn btn-small" onclick="logoutAdmin()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="showAdminTab('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </button>
+                <button class="admin-tab" onclick="showAdminTab('tickets')">
+                    <i class="fas fa-ticket-alt"></i> Tickets
+                </button>
+                <button class="admin-tab" onclick="showAdminTab('users')">
+                    <i class="fas fa-users"></i> Benutzer
+                </button>
+                <button class="admin-tab" onclick="showAdminTab('settings')">
+                    <i class="fas fa-cog"></i> Einstellungen
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="adminDashboard" class="admin-content">
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalTickets">0</h3>
+                        <p>Gesamt Tickets</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="openTickets">0</h3>
+                        <p>Offene Tickets</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="closedTickets">0</h3>
+                        <p>Geschlossene Tickets</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="urgentTickets">0</h3>
+                        <p>Dringende Tickets</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-charts">
+                <div class="chart-container">
+                    <h3>Tickets diese Woche</h3>
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Ticket Typen</h3>
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="recent-activity">
+                <h3>Letzte Aktivitäten</h3>
+                <div id="recentActivities" class="activity-list">
+                    <!-- Activities will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tickets Tab -->
+        <div id="adminTickets" class="admin-content" style="display: none;">
+            <div class="tickets-header">
+                <h3>Ticket Management</h3>
+                <div class="tickets-filters">
+                    <select id="statusFilter" onchange="filterTickets()">
+                        <option value="">Alle Status</option>
+                        <option value="open">Offen</option>
+                        <option value="in-progress">In Bearbeitung</option>
+                        <option value="waiting">Warten auf Antwort</option>
+                        <option value="closed">Geschlossen</option>
+                    </select>
+                    <select id="priorityFilter" onchange="filterTickets()">
+                        <option value="">Alle Prioritäten</option>
+                        <option value="urgent">Dringend</option>
+                        <option value="high">Hoch</option>
+                        <option value="medium">Mittel</option>
+                        <option value="low">Niedrig</option>
+                    </select>
+                    <input type="text" id="searchTickets" placeholder="Suchen..." onkeyup="filterTickets()">
+                </div>
+            </div>
+
+            <div class="tickets-table">
+                <table id="ticketsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Betreff</th>
+                            <th>Benutzer</th>
+                            <th>Typ</th>
+                            <th>Priorität</th>
+                            <th>Status</th>
+                            <th>Erstellt</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ticketsTableBody">
+                        <!-- Tickets will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="adminUsers" class="admin-content" style="display: none;">
+            <div class="users-header">
+                <h3>Benutzer Management</h3>
+                <button class="btn btn-primary" onclick="showAddUserModal()">
+                    <i class="fas fa-plus"></i> Benutzer hinzufügen
+                </button>
+            </div>
+
+            <div class="users-table">
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>E-Mail</th>
+                            <th>Tickets</th>
+                            <th>Registriert</th>
+                            <th>Status</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Users will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="adminSettings" class="admin-content" style="display: none;">
+            <div class="settings-container">
+                <div class="settings-section">
+                    <h3>Allgemeine Einstellungen</h3>
+                    <form id="generalSettings">
+                        <div class="form-group">
+                            <label for="siteName">Website Name</label>
+                            <input type="text" id="siteName" value="WAEngine Support">
+                        </div>
+                        <div class="form-group">
+                            <label for="supportEmail">Support E-Mail</label>
+                            <input type="email" id="supportEmail" value="support@waengine.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="autoResponse">Auto-Antwort aktiviert</label>
+                            <input type="checkbox" id="autoResponse" checked>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Speichern</button>
+                    </form>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Ticket Einstellungen</h3>
+                    <form id="ticketSettings">
+                        <div class="form-group">
+                            <label for="defaultPriority">Standard Priorität</label>
+                            <select id="defaultPriority">
+                                <option value="low">Niedrig</option>
+                                <option value="medium" selected>Mittel</option>
+                                <option value="high">Hoch</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="autoAssign">Auto-Zuweisung</label>
+                            <input type="checkbox" id="autoAssign">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Speichern</button>
+                    </form>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Benachrichtigungen</h3>
+                    <form id="notificationSettings">
+                        <div class="form-group">
+                            <label for="emailNotifications">E-Mail Benachrichtigungen</label>
+                            <input type="checkbox" id="emailNotifications" checked>
+                        </div>
+                        <div class="form-group">
+                            <label for="slackWebhook">Slack Webhook URL</label>
+                            <input type="url" id="slackWebhook" placeholder="https://hooks.slack.com/...">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Speichern</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Detail Modal -->
+    <div id="ticketDetailModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 id="ticketDetailTitle">Ticket Details</h2>
+                <span class="close" onclick="closeTicketDetail()">&times;</span>
+            </div>
+            <div class="ticket-detail-content">
+                <div class="ticket-info">
+                    <div class="ticket-meta">
+                        <div class="meta-item">
+                            <label>Ticket ID:</label>
+                            <span id="detailTicketId"></span>
+                        </div>
+                        <div class="meta-item">
+                            <label>Status:</label>
+                            <select id="detailStatus" onchange="updateTicketStatus()">
+                                <option value="open">Offen</option>
+                                <option value="pending">Wartend</option>
+                                <option value="resolved">Gelöst</option>
+                                <option value="closed">Geschlossen</option>
+                            </select>
+                        </div>
+                        <div class="meta-item">
+                            <label>Priorität:</label>
+                            <select id="detailPriority" onchange="updateTicketPriority()">
+                                <option value="low">Niedrig</option>
+                                <option value="medium">Mittel</option>
+                                <option value="high">Hoch</option>
+                                <option value="urgent">Dringend</option>
+                            </select>
+                        </div>
+                        <div class="meta-item">
+                            <label>Zugewiesen an:</label>
+                            <select id="detailAssignee" onchange="assignTicket()">
+                                <option value="">Nicht zugewiesen</option>
+                                <option value="admin">Admin</option>
+                                <option value="support">Support</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="ticket-description">
+                        <h4>Beschreibung</h4>
+                        <div id="ticketDescription"></div>
+                    </div>
+                </div>
+
+                <div class="ticket-conversation">
+                    <h4>Konversation</h4>
+                    <div class="conversation-list" id="conversationList">
+                        <!-- Nachrichten werden hier dynamisch geladen -->
+                    </div>
+                    
+                    <div class="reply-form">
+                        <textarea id="replyMessage" placeholder="Antwort schreiben..." rows="4"></textarea>
+                        <div class="reply-actions">
+                            <button class="btn btn-secondary" onclick="saveReplyDraft()">
+                                <i class="fas fa-save"></i> Entwurf
+                            </button>
+                            <button class="btn btn-primary" onclick="sendReply()">
+                                <i class="fas fa-paper-plane"></i> Senden
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

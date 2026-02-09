@@ -15,6 +15,10 @@ import { ErrorHandler } from "./error-handler.js";
 import { BusinessManager } from "./business-manager.js";
 import { AnalyticsManager } from "./analytics-manager.js";
 import { UIComponents } from "./ui-components.js";
+import { ConnectionRecovery } from "./connection-recovery.js";
+import { AuthRecovery } from "./auth-recovery.js";
+import { globalResourceManager } from "./resource-manager.js";
+import { AntiBanProtection } from "./anti-ban-protection.js";
 
 export class WhatsAppClient {
     constructor(options = {}) {
@@ -88,6 +92,19 @@ export class WhatsAppClient {
             failedPings: 0,
             avgResponseTime: 0
         };
+        
+        // ULTRA-ROBUSTE RECOVERY SYSTEME - NEU!
+        this.connectionRecovery = new ConnectionRecovery(this, {
+            maxRetries: options.maxRecoveryRetries || 10,
+            healthCheckInterval: options.healthCheckInterval || 30000
+        });
+        
+        this.authRecovery = new AuthRecovery(this.sessionManager, {
+            maxBackups: options.maxAuthBackups || 5,
+            autoBackupInterval: options.autoBackupInterval || 3600000
+        });
+        
+        this.resourceManager = globalResourceManager;
         
         // Session Manager
         this.sessionManager = new SessionManager(this.options.authDir);
@@ -506,6 +523,10 @@ export class WhatsAppClient {
                     this.startHeartbeat(); // Heartbeat starten
                     this.startConnectionWatchdog(); // Connection Watchdog starten
                     
+                    // ULTRA-ROBUSTE RECOVERY SYSTEME STARTEN
+                    this.connectionRecovery.startHealthMonitoring();
+                    this.authRecovery.startAutoBackup();
+                    
                     // Animation und Summary werden im creds.update Handler gemacht!
                     this.emit('connected');
                     
@@ -531,7 +552,10 @@ export class WhatsAppClient {
                     
                     // Jetzt erst die echten Success-Messages zeigen
                     this.logger.success("WhatsApp erfolgreich authentifiziert!");
-                    this.logger.showFinalSummary(['main-bot'], true);
+                    
+                    // Dynamische Ready Message mit echten Daten
+                    this.logger.showDynamicReadyMessage(this);
+                    
                     this.emit('truly_connected', { userId: creds.me.id });
                 }
             });
@@ -556,6 +580,10 @@ export class WhatsAppClient {
         this.stopHeartbeat();
         this.stopConnectionWatchdog();
         
+        // Stop recovery systems
+        this.connectionRecovery.stopHealthMonitoring();
+        this.authRecovery.stopAutoBackup();
+        
         if (this.socket) {
             this.socket.end();
             this.socket = null;
@@ -563,6 +591,9 @@ export class WhatsAppClient {
             await closeBrowser();
             this.emit('disconnected', { reason: 'manual' });
         }
+        
+        // Cleanup resources
+        this.resourceManager.cleanupAll();
     }
 
     // ===== ROBUSTE CONNECTION METHODS - NEU! =====
@@ -625,7 +656,7 @@ export class WhatsAppClient {
             clearInterval(this.connectionWatchdog);
         }
         
-        this.connectionWatchdog = setInterval(() => {
+        const timer = setInterval(() => {
             if (this.isConnected) {
                 const timeSinceLastPing = Date.now() - (this.connectionHealth.lastPing || 0);
                 
@@ -636,6 +667,9 @@ export class WhatsAppClient {
                 }
             }
         }, 60000); // Jede Minute prüfen
+        
+        this.connectionWatchdog = timer;
+        this.resourceManager.registerInterval(timer, { type: 'watchdog', component: 'client' });
     }
     
     stopConnectionWatchdog() {
@@ -884,8 +918,12 @@ export class WhatsAppClient {
     setupEventHandlers() {
         // Messages - Saubere Message-Erkennung ohne Debug-Spam
         this.socket.ev.on("messages.upsert", ({ messages, type }) => {
-            // Nur relevante Message-Types verarbeiten
-            if (type !== "notify" && type !== "append") return;
+            // DEBUG: Zeige alle Message-Types
+            console.log(`📥 Message Event - Type: ${type}, Count: ${messages.length}`);
+            
+            // WICHTIG: Alle Types akzeptieren außer explizit ausgeschlossene
+            // Nur "prepend" (alte History) ignorieren wenn gewünscht
+            // if (type === "prepend") return; // Optional: Alte Messages ignorieren
 
             messages.forEach((msg) => {
                 // Bessere Message-Validierung

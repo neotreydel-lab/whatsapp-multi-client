@@ -6,6 +6,7 @@ export class WAStorage {
     constructor(baseDir = './waengine-data') {
         this.baseDir = baseDir;
         this.cache = new Map();
+        this.warnedFiles = new Set(); // Track welche Dateien bereits gewarnt wurden
         this.ensureBaseDir();
         
         // Schöne Console ist jetzt Standard - keine Logs mehr hier
@@ -74,6 +75,16 @@ export class WAStorage {
                 // write.in("datei").push(item)
                 push: (item) => {
                     return this.pushItem(fileName, item);
+                },
+                
+                // write.in("datei").increment(key, amount)
+                increment: (key, amount = 1) => {
+                    return this.incrementKey(fileName, key, amount);
+                },
+                
+                // write.in("datei").decrement(key, amount)
+                decrement: (key, amount = 1) => {
+                    return this.incrementKey(fileName, key, -amount);
                 }
             };
         }
@@ -311,14 +322,49 @@ export class WAStorage {
     }
 
     pushItem(fileName, item) {
-        const data = this.readData(fileName) || [];
+        let data = this.readData(fileName);
         
+        // Wenn keine Daten existieren, erstelle neues Array
+        if (data === null || data === undefined) {
+            data = [];
+        }
+        
+        // Wenn Daten kein Array sind, konvertiere zu Array oder erstelle neues
         if (!Array.isArray(data)) {
-            console.error(`❌ ${fileName} ist kein Array - kann nicht pushen`);
-            return false;
+            // Warne nur einmal pro Datei (Anti-Spam)
+            if (!this.warnedFiles.has(fileName)) {
+                console.warn(`⚠️ ${fileName} ist kein Array - erstelle neues Array`);
+                this.warnedFiles.add(fileName);
+            }
+            data = [];
         }
         
         data.push(item);
+        return this.writeData(fileName, data);
+    }
+    
+    incrementKey(fileName, key, amount = 1) {
+        const data = this.readData(fileName) || {};
+        
+        // Unterstütze nested keys mit Punkt-Notation
+        const keys = key.split('.');
+        let current = data;
+        
+        for (let i = 0; i < keys.length - 1; i++) {
+            if (!current[keys[i]] || typeof current[keys[i]] !== 'object') {
+                current[keys[i]] = {};
+            }
+            current = current[keys[i]];
+        }
+        
+        const lastKey = keys[keys.length - 1];
+        
+        // Initialisiere mit 0 wenn nicht vorhanden
+        if (typeof current[lastKey] !== 'number') {
+            current[lastKey] = 0;
+        }
+        
+        current[lastKey] += amount;
         return this.writeData(fileName, data);
     }
 
@@ -421,6 +467,11 @@ export class WAStorage {
     // Bereinige Cache
     clearCache() {
         this.cache.clear();
+    }
+    
+    // Setze Warnungen zurück (für Testing oder Reset)
+    clearWarnings() {
+        this.warnedFiles.clear();
     }
 
     // Storage-Statistiken

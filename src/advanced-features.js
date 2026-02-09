@@ -285,22 +285,33 @@ export class AdvancedMessage {
 export class AdvancedGroup {
     constructor(client) {
         this.client = client;
-        this.socket = client.socket;
+    }
+    
+    // Getter für Socket mit Null-Check
+    get socket() {
+        if (!this.client.socket) {
+            throw new Error('❌ Socket nicht verfügbar. Bot muss erst verbunden sein!');
+        }
+        return this.client.socket;
     }
 
     async setGroupSettings(groupId, settings) {
         try {
-            const updates = {};
+            const results = [];
             
             if (settings.messagesAdminOnly !== undefined) {
-                updates.restrict = settings.messagesAdminOnly;
+                const setting = settings.messagesAdminOnly ? 'announcement' : 'not_announcement';
+                const result = await this.socket.groupSettingUpdate(groupId, setting);
+                results.push(result);
             }
             
             if (settings.editGroupInfo !== undefined) {
-                updates.announce = settings.editGroupInfo === 'admin_only';
+                const setting = settings.editGroupInfo === 'admin_only' ? 'locked' : 'unlocked';
+                const result = await this.socket.groupSettingUpdate(groupId, setting);
+                results.push(result);
             }
 
-            return await this.socket.groupSettingUpdate(groupId, updates);
+            return results.length === 1 ? results[0] : results;
         } catch (error) {
             console.error('❌ Group Settings Update fehlgeschlagen:', error);
             throw new Error(`Gruppeneinstellungen konnten nicht geändert werden: ${error.message}`);
@@ -377,7 +388,14 @@ export class AdvancedGroup {
 export class AdvancedPrivacy {
     constructor(client) {
         this.client = client;
-        this.socket = client.socket;
+    }
+    
+    // Getter für Socket mit Null-Check
+    get socket() {
+        if (!this.client.socket) {
+            throw new Error('❌ Socket nicht verfügbar. Bot muss erst verbunden sein!');
+        }
+        return this.client.socket;
     }
 
     async blockUser(jid) {
@@ -449,7 +467,14 @@ export class AdvancedPrivacy {
 export class AdvancedAnalytics {
     constructor(client) {
         this.client = client;
-        this.socket = client.socket;
+    }
+    
+    // Getter für Socket mit Null-Check
+    get socket() {
+        if (!this.client.socket) {
+            throw new Error('❌ Socket nicht verfügbar. Bot muss erst verbunden sein!');
+        }
+        return this.client.socket;
     }
 
     async getDeliveryStatus(messageKey) {
@@ -531,7 +556,14 @@ export class AdvancedAnalytics {
 export class AdvancedStatus {
     constructor(client) {
         this.client = client;
-        this.socket = client.socket;
+    }
+    
+    // Getter für Socket mit Null-Check
+    get socket() {
+        if (!this.client.socket) {
+            throw new Error('❌ Socket nicht verfügbar. Bot muss erst verbunden sein!');
+        }
+        return this.client.socket;
     }
 
     async sendStatusUpdate(type, content, options = {}) {
@@ -595,7 +627,14 @@ export class AdvancedStatus {
 export class AdvancedBusiness {
     constructor(client) {
         this.client = client;
-        this.socket = client.socket;
+    }
+    
+    // Getter für Socket mit Null-Check
+    get socket() {
+        if (!this.client.socket) {
+            throw new Error('❌ Socket nicht verfügbar. Bot muss erst verbunden sein!');
+        }
+        return this.client.socket;
     }
 
     async setBusinessProfile(profile) {
@@ -677,18 +716,27 @@ export class AdvancedBusiness {
 export class AdvancedSystem {
     constructor(client) {
         this.client = client;
-        this.socket = client.socket;
+    }
+    
+    // Getter für Socket mit Null-Check
+    get socket() {
+        if (!this.client.socket) {
+            throw new Error('❌ Socket nicht verfügbar. Bot muss erst verbunden sein!');
+        }
+        return this.client.socket;
     }
 
     async createBackup() {
         try {
-            // Backup der wichtigsten Daten
+            // Backup der wichtigsten Daten (vereinfacht, da Baileys keine getContacts/getChats hat)
             const backup = {
                 timestamp: Date.now(),
-                contacts: await this.socket.getContacts(),
-                chats: await this.socket.getChats(),
+                user: this.socket.user || null,
+                authState: 'saved', // Auth-State wird automatisch von Baileys gespeichert
                 settings: {
-                    // Wichtige Einstellungen
+                    prefix: this.client.prefix || null,
+                    commands: this.client.commands?.size || 0,
+                    plugins: this.client.plugins?.size || 0
                 }
             };
 

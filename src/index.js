@@ -9,10 +9,15 @@ export { Scheduler } from "./scheduler.js";
 export { StickerCreator } from "./sticker-creator.js";
 export { PluginManager } from "./plugin-manager-fixed.js";
 export { EasyBot, createBot, createMultiBot, quickBot, bot, multiBot } from "./easy-bot.js";
-export { generateQRCode } from "./qr.js";
+export { generateQRCode, scheduleQRCleanup, resetQRStatus } from "./qr.js";
 export { Message } from "./message.js";
 export { ConsoleLogger, logger } from "./console-logger.js";
 export { ErrorHandler, defaultErrorHandler } from "./error-handler.js";
+
+// ===== ULTRA-ROBUSTE RECOVERY SYSTEME - NEU v2.0.0! =====
+export { ConnectionRecovery } from "./connection-recovery.js";
+export { AuthRecovery } from "./auth-recovery.js";
+export { ResourceManager, globalResourceManager } from "./resource-manager.js";
 
 // ===== ADVANCED FEATURES EXPORTS - NEU! =====
 export { 

@@ -569,6 +569,88 @@ export class Message {
         });
     }
 
+    async deleteFromReply() {
+        // Prüfe ob die Message eine Reply ist
+        const contextInfo = this.raw.message?.extendedTextMessage?.contextInfo;
+        const quotedMessage = contextInfo?.quotedMessage;
+        const quotedKey = contextInfo?.stanzaId;
+        const quotedParticipant = contextInfo?.participant;
+        
+        if (!quotedMessage || !quotedKey) {
+            console.log('❌ Keine Reply-Message gefunden zum Löschen');
+            return { success: false, reason: 'no_reply' };
+        }
+        
+        try {
+            // Bot JID ermitteln
+            const botJid = this.client.socket.user?.id;
+            const botNumber = botJid?.split('@')[0]?.split(':')[0];
+            const quotedNumber = quotedParticipant?.split('@')[0]?.split(':')[0];
+            
+            // Prüfe ob Message vom Bot ist
+            const isFromBot = botNumber === quotedNumber;
+            
+            console.log('🔍 Debug Info:');
+            console.log('   Bot Number:', botNumber);
+            console.log('   Quoted Number:', quotedNumber);
+            console.log('   Is Group:', this.isGroup);
+            console.log('   Is from Bot:', isFromBot);
+            
+            // Erstelle den Key für die quoted Message
+            const messageKey = {
+                remoteJid: this.from,
+                id: quotedKey,
+                fromMe: isFromBot // true wenn vom Bot, false wenn von anderem User
+            };
+            
+            // In Gruppen: participant hinzufügen
+            if (this.isGroup && quotedParticipant) {
+                messageKey.participant = quotedParticipant;
+            }
+            
+            console.log('🗑️ Versuche Message zu löschen:', JSON.stringify(messageKey, null, 2));
+            
+            // Lösche die quoted Message
+            const result = await this.client.socket.sendMessage(this.from, {
+                delete: messageKey
+            });
+            
+            console.log('✅ Lösch-Request gesendet:', result);
+            return { 
+                success: true, 
+                messageId: quotedKey, 
+                wasFromBot: isFromBot,
+                result: result 
+            };
+            
+        } catch (error) {
+            console.error('❌ Fehler beim Löschen:', error.message);
+            
+            // Spezifische Fehlerbehandlung
+            if (error.message?.includes('not-found') || error.message?.includes('404')) {
+                return { 
+                    success: false, 
+                    reason: 'message_not_found', 
+                    error: 'Message zu alt oder bereits gelöscht' 
+                };
+            }
+            
+            if (error.message?.includes('forbidden') || error.message?.includes('403')) {
+                return { 
+                    success: false, 
+                    reason: 'no_permission', 
+                    error: 'WhatsApp erlaubt nur das Löschen eigener Messages!' 
+                };
+            }
+            
+            return { 
+                success: false, 
+                reason: 'unknown_error', 
+                error: error.message
+            };
+        }
+    }
+
     // ===== MENTION HELPERS =====
     
     getMentions() {

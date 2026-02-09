@@ -5,6 +5,21 @@ import path from 'path';
 export class SessionManager {
     constructor(authDir) {
         this.authDir = authDir;
+        this.cleanupTimers = new Set();
+        this.activeOperations = new Set();
+    }
+    
+    // Track active operations for cleanup
+    trackOperation(operationId) {
+        this.activeOperations.add(operationId);
+        return () => this.activeOperations.delete(operationId);
+    }
+    
+    // Cancel all active operations
+    cancelAllOperations() {
+        this.activeOperations.clear();
+        this.cleanupTimers.forEach(timer => clearTimeout(timer));
+        this.cleanupTimers.clear();
     }
 
     // Einfache Prüfung ob Auth-Ordner existiert
@@ -287,16 +302,20 @@ export class SessionManager {
                 fs.renameSync(dirPath, tempName);
                 console.log(`📁 Verzeichnis umbenannt zu: ${path.basename(tempName)}`);
                 
-                // Versuche verzögerte Löschung
-                setTimeout(() => {
+                // Versuche verzögerte Löschung mit Timer-Tracking
+                const timer = setTimeout(() => {
                     try {
                         if (fs.rmSync) {
                             fs.rmSync(tempName, { recursive: true, force: true });
                         }
                     } catch (delayedError) {
                         // Stille Behandlung - Verzeichnis bleibt umbenannt
+                    } finally {
+                        this.cleanupTimers.delete(timer);
                     }
                 }, 1000);
+                
+                this.cleanupTimers.add(timer);
                 
             } catch (renameError) {
                 console.log("⚠️ Verzeichnis konnte nicht umbenannt werden - bleibt bestehen");

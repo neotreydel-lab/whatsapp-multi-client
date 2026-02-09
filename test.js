@@ -18,7 +18,7 @@ async function main() {
     client.ignore.message.offline(true); // Ignoriert alle Offline-Messages beim Restart
 
     // ===== PREFIX SYSTEM SETUP =====
-    const prefix = "!"; // Dein Prefix
+    const prefix = "/"; // Dein Prefix
     client.setPrefix(prefix);
 
     // ===== COMMAND REGISTRIERUNG =====
@@ -1063,13 +1063,56 @@ async function main() {
         }
     });
 
+    // Group Lock/Unlock Commands - NEU!
+    client.addCommand('lock', async (msg, args) => {
+        if (!msg.isGroup) {
+            return msg.reply('❌ Nur in Gruppen verfügbar!');
+        }
+        
+        if (!(await msg.isAdmin())) {
+            return msg.reply('❌ Nur Admins können die Gruppe sperren!');
+        }
+        
+        try {
+            await msg.reply('🔒 Sperre Gruppe...');
+            await client.group.setSettings(msg.from, {
+                messagesAdminOnly: true
+            });
+            await msg.reply('🔒 Gruppe gesperrt! Nur noch Admins können schreiben.');
+        } catch (error) {
+            console.error('❌ Lock Fehler:', error);
+            await msg.reply(`❌ Fehler beim Sperren: ${error.message}\n💡 Stelle sicher, dass ich Admin-Rechte habe.`);
+        }
+    });
+
+    client.addCommand('unlock', async (msg, args) => {
+        if (!msg.isGroup) {
+            return msg.reply('❌ Nur in Gruppen verfügbar!');
+        }
+        
+        if (!(await msg.isAdmin())) {
+            return msg.reply('❌ Nur Admins können die Gruppe entsperren!');
+        }
+        
+        try {
+            await msg.reply('🔓 Entsperre Gruppe...');
+            await client.group.setSettings(msg.from, {
+                messagesAdminOnly: false
+            });
+            await msg.reply('🔓 Gruppe entsperrt! Alle können wieder schreiben.');
+        } catch (error) {
+            console.error('❌ Unlock Fehler:', error);
+            await msg.reply(`❌ Fehler beim Entsperren: ${error.message}\n💡 Stelle sicher, dass ich Admin-Rechte habe.`);
+        }
+    });
+
     // Advanced Features Overview
     client.addCommand('advanced', async (msg, args) => {
         let overview = `🚀 **WAEngine v1.7.3 - Advanced Features**\n\n`;
         overview += `📱 **Media:** !voice, !videomsg, !gif\n`;
         overview += `💬 **Messages:** !forward, !pin, !star, !quote\n`;
         overview += `🎨 **Rich Content:** !buttons, !list\n`;
-        overview += `👥 **Groups:** !groupinfo, !invitelink\n`;
+        overview += `👥 **Groups:** !groupinfo, !invitelink, !lock, !unlock\n`;
         overview += `🔐 **Privacy:** !block, !unblock\n`;
         overview += `📊 **Analytics:** !online, !archive, !mute\n`;
         overview += `📢 **Status:** !sendstatus\n`;

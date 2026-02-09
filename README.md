@@ -1,11 +1,11 @@
-# 🚀 WAEngine v1.7.4 - Session Authentication Fix Edition
+# 🚀 WAEngine v1.7.6 - Analytics Bugfix Edition
 
 [![NPM Version](https://img.shields.io/npm/v/waengine)](https://www.npmjs.com/package/waengine)
 [![Downloads](https://img.shields.io/npm/dm/waengine)](https://www.npmjs.com/package/waengine)
 [![License](https://img.shields.io/npm/l/waengine)](https://github.com/neotreydel-lab/waengine/blob/main/LICENSE)
 [![Node.js](https://img.shields.io/node/v/waengine)](https://nodejs.org/)
 
-**The most powerful WhatsApp Bot Library with 400+ Advanced Features**
+**The most powerful WhatsApp Bot Library with 400+ Advanced Features & Ultra-Robust Stability**
 
 🌍 **Universal Cross-Platform** - Works on ALL devices and platforms  
 🎯 **Sequential Multi-Device** - Professional QR scanning, one at a time  
@@ -1383,3 +1383,58 @@ Thanks to all contributors who make this project possible! 🎉
 **Made with ❤️ for WhatsApp Automation**
 
 *The most powerful WhatsApp bot library - from 3-line bots to enterprise multi-device systems!*
+
+
+---
+
+## 🔍 Error Codes System (NEW in v1.7.5!)
+
+WAEngine now includes a comprehensive error code system with **80+ predefined error codes** for better debugging and error handling.
+
+### **Features**
+- ✅ **Fixed Error Codes** - No more dynamic timestamps (WAE-1001, WAE-2002, etc.)
+- ✅ **15 Categories** - Connection, Auth, File, Message, Group, Media, etc.
+- ✅ **German Descriptions** - Clear error descriptions in German
+- ✅ **Quick Fixes** - Automatic solution suggestions for common errors
+- ✅ **Error Statistics** - Track error frequency and patterns
+- ✅ **Full Documentation** - See [ERROR-CODES.md](./ERROR-CODES.md)
+
+### **Usage Example**
+```javascript
+try {
+    await client.connect();
+} catch (error) {
+    console.log('Error Code:', error.code); // WAE-1001
+    console.log('Description:', getErrorDescription(error.code));
+    console.log('Category:', getErrorCategory(error.code));
+}
+```
+
+### **Error Categories**
+- **WAE-1xxx** - Connection Errors
+- **WAE-2xxx** - Authentication Errors
+- **WAE-3xxx** - File System Errors
+- **WAE-4xxx** - Message Errors
+- **WAE-5xxx** - Group Errors
+- **WAE-6xxx** - Media Errors
+- **WAE-7xxx** - Command Errors
+- **WAE-8xxx** - Plugin Errors
+- **WAE-9xxx** - System Errors
+- **WAE-10xxx** - QR Code Errors
+- **WAE-11xxx** - Mobile Support Errors
+- **WAE-12xxx** - Recovery Errors
+- **WAE-13xxx** - Database Errors
+- **WAE-14xxx** - Network Errors
+- **WAE-15xxx** - Security Errors
+
+### **Error Statistics**
+```javascript
+const stats = client.errorHandler.getErrorStats();
+console.log('Total Errors:', stats.totalErrors);
+console.log('Most Common:', stats.mostCommonError);
+console.log('By Code:', stats.errorsByCode);
+```
+
+**📖 Full Documentation:** [ERROR-CODES.md](./ERROR-CODES.md)
+
+---
